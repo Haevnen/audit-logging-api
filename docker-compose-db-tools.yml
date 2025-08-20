@@ -1,0 +1,12 @@
+services:
+  # migrate
+  flyway:
+    image: flyway/flyway:10-alpine
+    command: info
+    volumes:
+      - ./migrations:/flyway/sql
+    environment:
+      - FLYWAY_URL=jdbc:postgresql://${POSTGRESSQL_CONTAINER_NAME}:${POSTGRES_PORT}/${POSTGRES_DB}
+      - FLYWAY_USER=${POSTGRES_USER}
+      - FLYWAY_PASSWORD=${POSTGRES_PASSWORD}
+      - FLYWAY_LOCATIONS=filesystem:sql/files

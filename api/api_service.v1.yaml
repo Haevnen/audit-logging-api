@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Audit Logging API
+  version: 1.0.0
+servers:
+  - url: '{host}/api/v1'
+    variables:
+      host:
+        default: http://localhost:38081
+        enum:
+        - http://localhost:38081
+tags:
+- description: Tenant API
+  name: Tenants
+- description: Log API
+  name: Logs
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token
+  schemas:
+    Tenant:
+      properties:
+        id:
+          description: uuid string
+          example: 123e4567-e89b-12d3-a456-426655440000
+          type: string
+        name:
+          example: My Tenant
+          type: string
+        created_at:
+          description: Timestamp
+          example: 2025-08-19T20:28:12Z
+          type: string
+        updated_at:
+          description: Timestamp
+          example: 2025-08-19T20:28:12Z
+          type: string
+      required:
+      - name
+      - id
+      - created_at
+      - updated_at
+      type: object
+    Error:
+      properties:
+        type:
+          default: internal_error
+          enum:
+          - validation_failed
+          - permission_denied
+          - request_not_found
+          - internal_error
+          type: string
+        code:
+          description: Custom error code
+          type: string
+        title:
+          description: Error Summary
+          type: string
+        detail:
+          description: Detailed error description
+          type: string
+      required:
+      - code
+      - detail
+      - title
+      - type
+      type: object
+    CreateTenantRequestBody:
+      properties:
+        name:
+          example: My Tenant
+          type: string
+      required:
+      - name
+      type: object
+    Pong:
+      type: object
+      required:
+        - ping
+      properties:
+        ping:
+          type: string
+          example: pong
+paths:
+  /ping:
+    get:
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+  /tenants:
+    get:
+      description: List accessible tenants (admin only)
+      operationId: ListTenants
+      tags: 
+      - Tenants
+      security: 
+      - BearerAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Tenant'
+                type: array
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden (admin only)
+    post:
+      operationId: CreateTenant
+      tags: 
+      - Tenants
+      security: 
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequestBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden (admin only)

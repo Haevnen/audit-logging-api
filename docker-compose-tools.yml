@@ -1,0 +1,11 @@
+services:
+  oapi-codegen:
+    build: ./docker/deps/
+    volumes:
+      - ${SPEC_DIR}:/api
+    entrypoint: /go/bin/oapi-codegen
+
+  openapi-generator-cli:
+    image: openapitools/openapi-generator-cli:v5.3.0
+    volumes:
+      - ${SPEC_DIR}:/api
