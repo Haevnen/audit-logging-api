@@ -14,7 +14,35 @@ tags:
   name: Tenants
 - description: Log API
   name: Logs
+- description: Other
+  name: Other
 paths:
+  /auth/token:
+    post:
+      description: Generate auth token (testing purpose)
+      operationId: GenerateToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateTokenRequestBody'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateTokenResponse'
+          description: Successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+      summary: Generate auth token
+      tags:
+      - Other
   /ping:
     get:
       responses:
@@ -23,7 +51,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pong'
-          description: pet response
+          description: health check response
+      tags:
+      - Health
   /tenants:
     get:
       description: List accessible tenants (admin only)
@@ -51,9 +81,11 @@ paths:
           description: Access Forbidden (admin only)
       security:
       - BearerAuth: []
+      summary: List all tenants
       tags:
       - Tenants
     post:
+      description: Create a new tenant (admin only)
       operationId: CreateTenant
       requestBody:
         content:
@@ -82,6 +114,7 @@ paths:
           description: Access Forbidden (admin only)
       security:
       - BearerAuth: []
+      summary: Create a new tenant
       tags:
       - Tenants
 components:
@@ -149,6 +182,15 @@ components:
       required:
       - name
       type: object
+    GenerateTokenResponse:
+      example:
+        token: token
+      properties:
+        token:
+          type: string
+      required:
+      - token
+      type: object
     Pong:
       example:
         ping: pong
@@ -158,6 +200,24 @@ components:
           type: string
       required:
       - ping
+      type: object
+    GenerateTokenRequestBody:
+      example:
+        tenant_id: 123e4567-e89b-12d3-a456-426655440000
+        role: admin/user/auditor
+        user_id: 123e4567-e89b-12d3-a456-426655440000
+      properties:
+        tenant_id:
+          example: 123e4567-e89b-12d3-a456-426655440000
+          type: string
+        user_id:
+          example: 123e4567-e89b-12d3-a456-426655440000
+          type: string
+        role:
+          example: admin/user/auditor
+          type: string
+      required:
+      - role
       type: object
   securitySchemes:
     BearerAuth:

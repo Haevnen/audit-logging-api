@@ -36,6 +36,18 @@ type Error struct {
 // ErrorType defines model for Error.Type.
 type ErrorType string
 
+// GenerateTokenRequestBody defines model for GenerateTokenRequestBody.
+type GenerateTokenRequestBody struct {
+	Role     string  `json:"role"`
+	TenantId *string `json:"tenant_id,omitempty"`
+	UserId   *string `json:"user_id,omitempty"`
+}
+
+// GenerateTokenResponse defines model for GenerateTokenResponse.
+type GenerateTokenResponse struct {
+	Token string `json:"token"`
+}
+
 // Pong defines model for Pong.
 type Pong struct {
 	Ping string `json:"ping"`
@@ -53,6 +65,9 @@ type Tenant struct {
 	// UpdatedAt Timestamp
 	UpdatedAt string `json:"updated_at"`
 }
+
+// GenerateTokenJSONRequestBody defines body for GenerateToken for application/json ContentType.
+type GenerateTokenJSONRequestBody = GenerateTokenRequestBody
 
 // CreateTenantJSONRequestBody defines body for CreateTenant for application/json ContentType.
 type CreateTenantJSONRequestBody = CreateTenantRequestBody

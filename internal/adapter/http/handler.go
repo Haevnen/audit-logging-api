@@ -11,11 +11,13 @@ import (
 
 type Handler struct {
 	tenantHandler
+	tokenHandler
 }
 
 func New(r *registry.Registry) Handler {
 	h := Handler{}
 	h.tenantHandler = newTenantHandler(r)
+	h.tokenHandler = newTokenHandler(r)
 	return h
 }
 
@@ -35,7 +37,7 @@ func bindRequestBody(ctx *gin.Context, body interface{}) error {
 	return nil
 }
 
-func sendError(ctx *gin.Context, title string, err error) {
+func SendError(ctx *gin.Context, title string, err error) {
 	appErr := apperror.New(ctx, err)
 	ctx.JSON(appErr.HTTPStatus(), api_service.Error{
 		Type:   api_service.ErrorType(appErr.ResType()),

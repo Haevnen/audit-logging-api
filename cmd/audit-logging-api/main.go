@@ -12,7 +12,9 @@ import (
 
 	handler "github.com/Haevnen/audit-logging-api/internal/adapter/http"
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
+	"github.com/Haevnen/audit-logging-api/internal/auth"
 	"github.com/Haevnen/audit-logging-api/internal/config"
+	"github.com/Haevnen/audit-logging-api/internal/infra/middleware"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
 	"github.com/Haevnen/audit-logging-api/pkg/gormdb"
 	"github.com/Haevnen/audit-logging-api/pkg/logger"
@@ -60,17 +62,25 @@ func start() int {
 	// Setup router
 	r := gin.Default()
 	gin.SetMode(cfg.Mode)
-	registry := registry.NewRegistry(db)
+
+	registry := registry.NewRegistry(db, cfg.TokenSymmetricKey)
 	handler := handler.New(registry)
+	jwt := registry.Manager()
 
 	// Register health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
+	r.POST("/api/v1/auth/token", handler.GenerateToken)
+
 	// Register handlers
 	registerHandlersWithOptionsForTenant(r, handler, api_service.GinServerOptions{
 		BaseURL: "/api/v1",
+		Middlewares: []api_service.MiddlewareFunc{
+			middleware.RequireAuth(jwt),
+			middleware.RequireRole(auth.RoleAdmin),
+		},
 	})
 
 	// Start server
@@ -80,7 +90,7 @@ func start() int {
 	}
 	go func() {
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.WithField("error", err).Panic("Failed to start server")
+			logger.WithField("error", err).Fatal("Failed to start server")
 		}
 	}()
 

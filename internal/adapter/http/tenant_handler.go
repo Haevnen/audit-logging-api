@@ -26,7 +26,7 @@ func newTenantHandler(r *registry.Registry) tenantHandler {
 func (h tenantHandler) ListTenants(g *gin.Context) {
 	tenants, err := h.ListUC.Execute(g.Request.Context())
 	if err != nil {
-		sendError(g, err.Error(), apperror.ErrInternalServer)
+		SendError(g, err.Error(), apperror.ErrInternalServer)
 		return
 	}
 	g.JSON(http.StatusOK, tenants)
@@ -36,18 +36,18 @@ func (h tenantHandler) ListTenants(g *gin.Context) {
 func (h tenantHandler) CreateTenant(g *gin.Context) {
 	var body api_service.CreateTenantRequestBody
 	if err := bindRequestBody(g, &body); err != nil {
-		sendError(g, err.Error(), apperror.ErrInvalidRequestInput)
+		SendError(g, err.Error(), apperror.ErrInvalidRequestInput)
 		return
 	}
 
-	if body.Name == "" {
-		sendError(g, "name is required", apperror.ErrInvalidRequestInput)
+	if len(body.Name) == 0 {
+		SendError(g, "name is required", apperror.ErrInvalidRequestInput)
 		return
 	}
 
 	t, err := h.CreateUC.Execute(g.Request.Context(), body.Name)
 	if err != nil {
-		sendError(g, err.Error(), apperror.ErrInternalServer)
+		SendError(g, err.Error(), apperror.ErrInternalServer)
 		return
 	}
 	g.JSON(http.StatusCreated, t)

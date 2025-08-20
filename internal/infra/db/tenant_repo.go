@@ -40,8 +40,8 @@ func (r *TenantRepo) Create(ctx context.Context, t tenant.Tenant) (tenant.Tenant
 	return tenant.Tenant{
 		ID:        m.ID,
 		Name:      m.Name,
-		CreatedAt: t.CreatedAt,
-		UpdatedAt: t.UpdatedAt,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
 	}, nil
 }
 

@@ -14,6 +14,8 @@ tags:
   name: Tenants
 - description: Log API
   name: Logs
+- description: Other
+  name: Other
 components:
   securitySchemes:
     BearerAuth:
@@ -78,6 +80,13 @@ components:
       required:
       - name
       type: object
+    GenerateTokenResponse:
+      properties:
+        token:
+          type: string
+      required:
+      - token
+      type: object
     Pong:
       type: object
       required:
@@ -86,20 +95,64 @@ components:
         ping:
           type: string
           example: pong
+    GenerateTokenRequestBody:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426655440000
+        user_id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426655440000
+        role:
+          type: string
+          example: admin/user/auditor
+      required:
+        - role
 paths:
+  /auth/token:
+    post:
+      description: Generate auth token (testing purpose)
+      operationId: GenerateToken
+      summary: Generate auth token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateTokenRequestBody'
+      tags: 
+      - Other
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateTokenResponse'
+          description: Successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        
   /ping:
     get:
       responses:
         '200':
-          description: pet response
+          description: health check response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pong'
+      tags:
+      - Health
   /tenants:
     get:
       description: List accessible tenants (admin only)
       operationId: ListTenants
+      summary: List all tenants
       tags: 
       - Tenants
       security: 
@@ -127,6 +180,8 @@ paths:
           description: Access Forbidden (admin only)
     post:
       operationId: CreateTenant
+      description: Create a new tenant (admin only)
+      summary: Create a new tenant
       tags: 
       - Tenants
       security: 
