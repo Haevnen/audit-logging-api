@@ -1,6 +1,3 @@
-// Package apperror application errors
-// Basically we wrap every error in the application layer (except for util) by apperror.New
-// When returning the response, it sets http status, error code, detail via apperror.Error
 package apperror
 
 import (
@@ -18,7 +15,7 @@ type Error struct {
 	httpStatus int
 	resType    string
 	errCode    string
-	details    []string // Use slice in case several messages are returned in the response
+	details    []string
 }
 
 // Define application layer errors
@@ -32,6 +29,7 @@ var (
 	ErrForbidden                        = errors.New("ERR_FORBIDDEN")
 	ErrInvalidRequestInput              = errors.New("ERR_INVALID_REQUEST_INPUT")
 	ErrRecordNotFound                   = errors.New("ERR_RECORD_NOT_FOUND")
+	ErrTooManyRequests                  = errors.New("ERR_TOO_MANY_REQUESTS")
 )
 
 func New(_ context.Context, err error, params ...any) *Error {

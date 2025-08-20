@@ -80,6 +80,7 @@ func start() int {
 		Middlewares: []api_service.MiddlewareFunc{
 			middleware.RequireAuth(jwt),
 			middleware.RequireRole(auth.RoleAdmin),
+			middleware.RequireRateLimit(cfg.RateLimitRPS, cfg.RateLimitBurst),
 		},
 	})
 

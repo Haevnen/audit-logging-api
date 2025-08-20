@@ -10,7 +10,7 @@ import (
 
 func RequireRole(roles ...auth.Role) api_service.MiddlewareFunc {
 	return func(c *gin.Context) {
-		role := c.MustGet("role").(auth.Role)
+		role := c.MustGet(Role).(auth.Role)
 		for _, r := range roles {
 			if role == r {
 				c.Next()

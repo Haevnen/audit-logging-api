@@ -14,6 +14,9 @@ import (
 const (
 	AuthorizationHeaderKey  = "authorization"
 	AuthorizationTypeBearer = "Bearer "
+	TenantID                = "tenant_id"
+	UserID                  = "user_id"
+	Role                    = "role"
 )
 
 func RequireAuth(jwtManager *auth.Manager) api_service.MiddlewareFunc {
@@ -38,9 +41,9 @@ func RequireAuth(jwtManager *auth.Manager) api_service.MiddlewareFunc {
 			return
 		}
 
-		c.Set("user_id", claims.UserID)
-		c.Set("tenant_id", claims.TenantID)
-		c.Set("role", claims.Role)
+		c.Set(UserID, claims.UserID)
+		c.Set(TenantID, claims.TenantID)
+		c.Set(Role, claims.Role)
 
 		c.Next()
 	}

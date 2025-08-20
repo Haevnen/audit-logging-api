@@ -15,6 +15,8 @@ type Config struct {
 	PostgresPassword      string `env:"POSTGRES_PASSWORD"`
 	PostgresDB            string `env:"POSTGRES_DB"`
 	PostgresContainerName string `env:"POSTGRESSQL_CONTAINER_NAME"`
+	MaxOpenConn           int    `env:"POSTGRESSQL_MAX_OPEN_CONN"`
+	MaxIdleConn           int    `env:"POSTGRESSQL_MAX_IDLE_CONN"`
 
 	ProjectName string `env:"PROJECT_NAME"`
 	SpecDir     string `env:"SPEC_DIR"`
@@ -24,6 +26,9 @@ type Config struct {
 	APIHost           string `env:"API_HOST"`
 	Mode              string `env:"RUN_MODE"`
 	TokenSymmetricKey string `env:"TOKEN_SYMMETRIC_KEY"`
+
+	RateLimitBurst int `env:"RATE_LIMIT_BURST"`
+	RateLimitRPS   int `env:"RATE_LIMIT_RPS"`
 }
 
 func LoadConfig() (config Config, err error) {
@@ -50,8 +55,8 @@ func (e *Config) GetGORMConfig() *gormdb.Config {
 		DBName:            e.PostgresDB,
 		DBLocation:        "UTC",
 		LogSQL:            true,
-		MaxOpenConn:       100,
-		MaxIdleConn:       10,
+		MaxOpenConn:       e.MaxOpenConn,
+		MaxIdleConn:       e.MaxIdleConn,
 		MaxLifetimeSecond: 300,
 	}
 }

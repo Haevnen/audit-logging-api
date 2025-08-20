@@ -17,7 +17,6 @@ type definedErrorDetail struct {
 
 var (
 	errMessageMap = map[error]definedErrorDetail{
-
 		context.Canceled:                   {httpStatus: http.StatusBadRequest, resType: string(api.ValidationFailed), errCode: errCode4999, msg: "The operation was canceled."},
 		ErrInternalServer:                  {httpStatus: http.StatusInternalServerError, resType: string(api.InternalError), errCode: errCodeInternalServerError, msg: "An Unexpected Error has occurred."},
 		ErrInvalidToken:                    {httpStatus: http.StatusUnauthorized, resType: string(api.ValidationFailed), errCode: errCodeUnauthorized, msg: "The token is invalid."},
@@ -27,6 +26,7 @@ var (
 		ErrForbidden:                       {httpStatus: http.StatusForbidden, resType: string(api.PermissionDenied), errCode: errCodeForbidden, msg: "The user is forbidden to access the resource."},
 		ErrInvalidRequestInput:             {httpStatus: http.StatusBadRequest, resType: string(api.ValidationFailed), errCode: errCodeInvalidRequest, msg: "The input is invalid."},
 		ErrRecordNotFound:                  {httpStatus: http.StatusNotFound, resType: string(api.RequestNotFound), errCode: errCodeNotFound, msg: "The record is not found."},
+		ErrTooManyRequests:                 {httpStatus: http.StatusTooManyRequests, resType: string(api.ValidationFailed), errCode: errCodeInvalidRequest, msg: "Too many requests."},
 	}
 )
 
