@@ -8,12 +8,14 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
+	"github.com/oapi-codegen/runtime"
 )
 
 // ServerInterface represents all server handlers.
@@ -21,6 +23,15 @@ type ServerInterface interface {
 	// Generate auth token
 	// (POST /auth/token)
 	GenerateToken(c *gin.Context)
+	// Create a new log
+	// (POST /logs)
+	CreateLog(c *gin.Context)
+	// Create bulk logs
+	// (POST /logs/bulk)
+	CreateBulkLogs(c *gin.Context)
+	// Get a log by id
+	// (GET /logs/{id})
+	GetLog(c *gin.Context, id string)
 
 	// (GET /ping)
 	GetPing(c *gin.Context)
@@ -52,6 +63,62 @@ func (siw *ServerInterfaceWrapper) GenerateToken(c *gin.Context) {
 	}
 
 	siw.Handler.GenerateToken(c)
+}
+
+// CreateLog operation middleware
+func (siw *ServerInterfaceWrapper) CreateLog(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateLog(c)
+}
+
+// CreateBulkLogs operation middleware
+func (siw *ServerInterfaceWrapper) CreateBulkLogs(c *gin.Context) {
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.CreateBulkLogs(c)
+}
+
+// GetLog operation middleware
+func (siw *ServerInterfaceWrapper) GetLog(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(BearerAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetLog(c, id)
 }
 
 // GetPing operation middleware
@@ -125,6 +192,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	}
 
 	router.POST(options.BaseURL+"/auth/token", wrapper.GenerateToken)
+	router.POST(options.BaseURL+"/logs", wrapper.CreateLog)
+	router.POST(options.BaseURL+"/logs/bulk", wrapper.CreateBulkLogs)
+	router.GET(options.BaseURL+"/logs/:id", wrapper.GetLog)
 	router.GET(options.BaseURL+"/ping", wrapper.GetPing)
 	router.GET(options.BaseURL+"/tenants", wrapper.ListTenants)
 	router.POST(options.BaseURL+"/tenants", wrapper.CreateTenant)
@@ -133,25 +203,34 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xXW2/bNhT+K8TZHjpAjuRLslRvabduHTIsWDwMWGAYtHRssZVIlqSyeYH++8CLbclS",
-	"lgaN97QnW9S5n4/fOXqATFRScORGQ/oAOiuwou7vW4XU4Bw55eZX/FSjNm9EvrWv8C9ayRLtX04rhBR+",
-	"3hIvCU0EUgmJyjDUB4mWUks4ArOV9kgbxfgGmiYChZ9qpjCH9M7rLvZSYvUBM+fie6WEsla7vjKRO185",
-	"6kwxaZjgkMLbWhtREbQ6xIn0/EaQo6Gs7Ct/584xD+rtlwNWDDPlQAQuXHJbVxVV20E9d2DV1rQuDaTA",
-	"uEHFabl0fiEC5HVla3JPS5ZTa3i5dpFBBBJVxbS2Zzly5s6U79mSC7Nci5rbsyOji6fqH4oVarNLL2gN",
-	"9eUH5KgsbMRH5I+jRgkHBJpXjMe1RhXTOmfG5WkcNJYshxTGkynOzi++HeHl69VoPMmnIzo7vxjNJhcX",
-	"5+ezWZIkCURgLTxDoQdRH04bosOR9bp2CLWt/JlR98zt0/hyY0d9dAl+Rr+0FFzjUbOMfQdp+O0VL7x+",
-	"eCIELzYUw43gmyOX0lpIQQpfmK5D/7JdIyf3VA2c2pD/wEXdCDLHfvmS2rs4SSbno+RyNH49nyTp5DId",
-	"T/6wt+kZEO3xZAS1zJ9w0Uu9HdUxx8xZhdrQSlqu2JfmkdB72POw61qsa5aTIBK9AL6fNQm69XnJZI85",
-	"7lBTV4YQZ8d/HzZNBBqzWjGzvbUz0/fnDVKF6qo2hX1auad3QlWuxT/9Pndc2s7DKxB/OSI/fq0br3qI",
-	"vTBGQmO9Mr4W7rb5SQNXlp7ItdhsGN+Qq5v3EME9Ku3tj8+SM0d4QiKnkkEK07PkbGpnBjWFCzqmtSni",
-	"/TWWQg8UfEcUxAr7eMkrg9pYr7JWUmj8Bpwf5YbT+7ylNQ/5qe5EyAQ36K8elbJkmdOMP2jBD8uI/fe1",
-	"wjWk8FV82FbisKrEj46cpttpo2p0B57kXOqTJDlVHIFKXRDdUt7WWYZar+uS7KtlWzR7wWD8fjTg/A3N",
-	"SSiSB3HYSQY7bPFHN9rekl9MgQoWViXeEfAGXZTHLTc3njBOVmk3MAZyK5CWpiBZgdlHog4dOGTxo5MI",
-	"afjprVuZdM1dM20Idb1iqxJJkCev3HJABC+3fcRbpXkw/IUlYAYr/VQtDlt3YAqqFN0+D3bj08PuN25R",
-	"JRT7G3PvdHp6p1cuYfJOqBXLc0tY7c61KRzSuy553y2aRftyeCyU5Q4ErZux6/bCTutB7vRfUoQSjn8G",
-	"A/8Oovan14lY87Gvu/+YNHfw/R+uLwrXAcQNItYbVXZfcDZrVUIKD4XQpompZPH92K4TVDG6Kn33iz3E",
-	"d1+qdjdJ47gUGS3t23R6mVyOW1+sjwhY94t9VL0Nz98Tv9CE7XkXeBP1uFpsuqLXYjMk58fYXso/Novm",
-	"nwAAAP//oyoHrggRAAA=",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

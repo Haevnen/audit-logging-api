@@ -1,6 +1,8 @@
 package tenant
 
-import "time"
+import (
+	"time"
+)
 
 type Tenant struct {
 	ID        string

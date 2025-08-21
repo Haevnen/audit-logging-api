@@ -9,15 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	DateTimeFormat = "2006-01-02T15:04:05.000Z"
+)
+
 type Handler struct {
 	tenantHandler
 	tokenHandler
+	logHandler
 }
 
 func New(r *registry.Registry) Handler {
 	h := Handler{}
 	h.tenantHandler = newTenantHandler(r)
 	h.tokenHandler = newTokenHandler(r)
+	h.logHandler = newLogHandler(r)
 	return h
 }
 

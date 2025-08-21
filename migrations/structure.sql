@@ -35,15 +35,55 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: _compressed_hypertable_16; Type: TABLE; Schema: _timescaledb_internal; Owner: -
+--
+
+CREATE TABLE _timescaledb_internal._compressed_hypertable_16 (
+);
+
+
+--
+-- Name: logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.logs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    tenant_id uuid NOT NULL,
+    user_id text NOT NULL,
+    session_id text,
+    action text NOT NULL,
+    resource text,
+    resource_id text,
+    severity text DEFAULT 'INFO'::text NOT NULL,
+    ip_address inet,
+    user_agent text,
+    message text,
+    before jsonb,
+    after jsonb,
+    metadata jsonb,
+    event_timestamp timestamp with time zone NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: tenants; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.tenants (
     id uuid NOT NULL,
-    name character varying(50) NOT NULL,
+    name text NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+
+--
+-- Name: logs logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.logs
+    ADD CONSTRAINT logs_pkey PRIMARY KEY (tenant_id, created_at, id);
 
 
 --
@@ -52,6 +92,42 @@ CREATE TABLE public.tenants (
 
 ALTER TABLE ONLY public.tenants
     ADD CONSTRAINT tenants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: logs_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX logs_created_at_idx ON public.logs USING btree (created_at DESC);
+
+
+--
+-- Name: logs_tenant_id_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX logs_tenant_id_created_at_idx ON public.logs USING btree (tenant_id, created_at DESC);
+
+
+--
+-- Name: _compressed_hypertable_16 ts_insert_blocker; Type: TRIGGER; Schema: _timescaledb_internal; Owner: -
+--
+
+CREATE TRIGGER ts_insert_blocker BEFORE INSERT ON _timescaledb_internal._compressed_hypertable_16 FOR EACH ROW EXECUTE FUNCTION _timescaledb_functions.insert_blocker();
+
+
+--
+-- Name: logs ts_insert_blocker; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER ts_insert_blocker BEFORE INSERT ON public.logs FOR EACH ROW EXECUTE FUNCTION _timescaledb_functions.insert_blocker();
+
+
+--
+-- Name: logs logs_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.logs
+    ADD CONSTRAINT logs_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
 
 
 --

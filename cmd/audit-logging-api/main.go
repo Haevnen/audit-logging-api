@@ -12,31 +12,12 @@ import (
 
 	handler "github.com/Haevnen/audit-logging-api/internal/adapter/http"
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
-	"github.com/Haevnen/audit-logging-api/internal/auth"
 	"github.com/Haevnen/audit-logging-api/internal/config"
 	"github.com/Haevnen/audit-logging-api/internal/infra/middleware"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
 	"github.com/Haevnen/audit-logging-api/pkg/gormdb"
 	"github.com/Haevnen/audit-logging-api/pkg/logger"
 )
-
-func registerHandlersWithOptionsForTenant(router gin.IRouter, si api_service.ServerInterface, options api_service.GinServerOptions) {
-	errorHandler := options.ErrorHandler
-	if errorHandler == nil {
-		errorHandler = func(c *gin.Context, err error, statusCode int) {
-			c.JSON(statusCode, gin.H{"msg": err.Error()})
-		}
-	}
-
-	wrapper := api_service.ServerInterfaceWrapper{
-		Handler:            si,
-		HandlerMiddlewares: options.Middlewares,
-		ErrorHandler:       errorHandler,
-	}
-
-	router.GET(options.BaseURL+"/tenants", wrapper.ListTenants)
-	router.POST(options.BaseURL+"/tenants", wrapper.CreateTenant)
-}
 
 func start() int {
 	cfg, err := config.LoadConfig()
@@ -72,14 +53,12 @@ func start() int {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	r.POST("/api/v1/auth/token", handler.GenerateToken)
-
 	// Register handlers
-	registerHandlersWithOptionsForTenant(r, handler, api_service.GinServerOptions{
+	api_service.RegisterHandlersWithOptions(r, handler, api_service.GinServerOptions{
 		BaseURL: "/api/v1",
 		Middlewares: []api_service.MiddlewareFunc{
 			middleware.RequireAuth(jwt),
-			middleware.RequireRole(auth.RoleAdmin),
+			middleware.RequireRole(),
 			middleware.RequireRateLimit(cfg.RateLimitRPS, cfg.RateLimitBurst),
 		},
 	})

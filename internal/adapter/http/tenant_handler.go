@@ -29,7 +29,17 @@ func (h tenantHandler) ListTenants(g *gin.Context) {
 		SendError(g, err.Error(), apperror.ErrInternalServer)
 		return
 	}
-	g.JSON(http.StatusOK, tenants)
+
+	resp := make([]api_service.Tenant, 0, len(tenants))
+	for _, t := range tenants {
+		resp = append(resp, api_service.Tenant{
+			Id:        t.ID,
+			Name:      t.Name,
+			CreatedAt: t.CreatedAt.Format(DateTimeFormat),
+			UpdatedAt: t.UpdatedAt.Format(DateTimeFormat),
+		})
+	}
+	g.JSON(http.StatusOK, resp)
 }
 
 // (POST /tenants)
@@ -50,5 +60,12 @@ func (h tenantHandler) CreateTenant(g *gin.Context) {
 		SendError(g, err.Error(), apperror.ErrInternalServer)
 		return
 	}
-	g.JSON(http.StatusCreated, t)
+
+	resp := api_service.Tenant{
+		Id:        t.ID,
+		Name:      t.Name,
+		CreatedAt: t.CreatedAt.Format(DateTimeFormat),
+		UpdatedAt: t.UpdatedAt.Format(DateTimeFormat),
+	}
+	g.JSON(http.StatusCreated, resp)
 }

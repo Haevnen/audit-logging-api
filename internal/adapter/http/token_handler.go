@@ -35,20 +35,7 @@ func (t tokenHandler) GenerateToken(c *gin.Context) {
 		return
 	}
 
-	var (
-		userId   string
-		tenantId string
-	)
-
-	if genTokenReqBody.TenantId != nil {
-		tenantId = *genTokenReqBody.TenantId
-	}
-
-	if genTokenReqBody.UserId != nil {
-		userId = *genTokenReqBody.UserId
-	}
-
-	token, err := t.jwtManager.GenerateToken(userId, tenantId, role, 1*time.Hour)
+	token, err := t.jwtManager.GenerateToken(genTokenReqBody.UserId, genTokenReqBody.TenantId, role, 1*time.Hour)
 	if err != nil {
 		SendError(c, "failed to generate token", apperror.ErrInternalServer)
 		return

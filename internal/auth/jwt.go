@@ -11,9 +11,9 @@ type Manager struct {
 }
 
 type Claims struct {
-	UserID   string `json:"sub"`
-	TenantID string `json:"tenant_id"`
-	Role     Role   `json:"role"`
+	UserID   string
+	TenantID string
+	Role     Role
 	jwt.RegisteredClaims
 }
 

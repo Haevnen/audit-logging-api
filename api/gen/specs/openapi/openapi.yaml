@@ -117,6 +117,116 @@ paths:
       summary: Create a new tenant
       tags:
       - Tenants
+  /logs:
+    post:
+      description: Create a new log
+      operationId: CreateLog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLogRequestBody'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLogResponse'
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+      security:
+      - BearerAuth: []
+      summary: Create a new log
+      tags:
+      - Logs
+  /logs/bulk:
+    post:
+      description: Create bulk logs
+      operationId: CreateBulkLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLogRequestBody'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLogResponse'
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+      security:
+      - BearerAuth: []
+      summary: Create bulk logs
+      tags:
+      - Logs
+  /logs/{id}:
+    get:
+      description: Get a log by id
+      operationId: GetLog
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSingleLogResponse'
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found
+      security:
+      - BearerAuth: []
+      summary: Get a log by id
+      tags:
+      - Logs
 components:
   schemas:
     Tenant:
@@ -205,19 +315,176 @@ components:
       example:
         tenant_id: 123e4567-e89b-12d3-a456-426655440000
         role: admin/user/auditor
-        user_id: 123e4567-e89b-12d3-a456-426655440000
+        user_id: 123user
       properties:
         tenant_id:
           example: 123e4567-e89b-12d3-a456-426655440000
           type: string
         user_id:
-          example: 123e4567-e89b-12d3-a456-426655440000
+          example: 123user
           type: string
         role:
           example: admin/user/auditor
           type: string
       required:
       - role
+      - tenant_id
+      - user_id
+      type: object
+    CreateLogRequestBody:
+      example:
+        tenant_id: tenant_id
+        metadata:
+          key: '{}'
+        resource: resource
+        before:
+          key: '{}'
+        session_id: session_id
+        ip_address: ip_address
+        message: message
+        event_timestamp: 2000-01-23T04:56:07.000+00:00
+        user_id: user_id
+        resource_id: resource_id
+        after:
+          key: '{}'
+        user_agent: user_agent
+      properties:
+        tenant_id:
+          type: string
+        user_id:
+          type: string
+        session_id:
+          type: string
+        action:
+          $ref: '#/components/schemas/Action'
+        message:
+          type: string
+        resource:
+          type: string
+        resource_id:
+          type: string
+        severity:
+          $ref: '#/components/schemas/Severity'
+        ip_address:
+          format: ipv4
+          type: string
+        user_agent:
+          type: string
+        before:
+          additionalProperties: true
+          type: object
+        after:
+          additionalProperties: true
+          type: object
+        metadata:
+          additionalProperties: true
+          type: object
+        event_timestamp:
+          format: date-time
+          type: string
+      required:
+      - action
+      - event_timestamp
+      - severity
+      - tenant_id
+      - user_id
+      type: object
+    CreateLogResponse:
+      example:
+        created_at: created_at
+        id: id
+      properties:
+        id:
+          description: UUID
+          type: string
+        created_at:
+          description: Timestamp
+          type: string
+      required:
+      - created_at
+      - id
+      type: object
+    Severity:
+      enum:
+      - INFO
+      - WARNING
+      - ERROR
+      - CRITICAL
+      type: string
+    Action:
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      - VIEW
+      type: string
+    GetSingleLogResponse:
+      example:
+        tenant_id: tenant_id
+        metadata:
+          key: '{}'
+        resource: resource
+        before:
+          key: '{}'
+        session_id: session_id
+        created_at: created_at
+        ip_address: ip_address
+        message: message
+        event_timestamp: event_timestamp
+        user_id: user_id
+        resource_id: resource_id
+        id: id
+        after:
+          key: '{}'
+        user_agent: user_agent
+      properties:
+        id:
+          description: UUID
+          type: string
+        tenant_id:
+          type: string
+        user_id:
+          type: string
+        session_id:
+          type: string
+        action:
+          $ref: '#/components/schemas/Action'
+        message:
+          type: string
+        resource:
+          type: string
+        resource_id:
+          type: string
+        severity:
+          $ref: '#/components/schemas/Severity'
+        ip_address:
+          format: ipv4
+          type: string
+        user_agent:
+          type: string
+        before:
+          additionalProperties: true
+          type: object
+        after:
+          additionalProperties: true
+          type: object
+        metadata:
+          additionalProperties: true
+          type: object
+        event_timestamp:
+          description: Timestamp
+          type: string
+        created_at:
+          description: Timestamp
+          type: string
+      required:
+      - action
+      - created_at
+      - event_timestamp
+      - id
+      - severity
+      - tenant_id
+      - user_id
       type: object
   securitySchemes:
     BearerAuth:

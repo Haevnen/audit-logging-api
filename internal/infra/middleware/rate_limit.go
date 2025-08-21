@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/apperror"
 	"github.com/Haevnen/audit-logging-api/internal/auth"
+	"github.com/Haevnen/audit-logging-api/internal/constant"
 )
 
 var tenantLimiter sync.Map
@@ -28,7 +30,13 @@ func getLimiter(tenantID string, reqPerSec, burst int) *rate.Limiter {
 
 func RequireRateLimit(reqPerSec, burst int) api_service.MiddlewareFunc {
 	return func(c *gin.Context) {
-		tenantID, role := c.GetString(TenantID), c.MustGet(Role).(auth.Role)
+		key := c.Request.Method + ":" + strings.TrimPrefix(c.FullPath(), constant.BaseURL)
+		if key == exceptionAPI {
+			c.Next()
+			return
+		}
+
+		tenantID, role := c.GetString(constant.TenantID), c.MustGet(constant.Role).(auth.Role)
 		if role == auth.RoleAdmin {
 			// Admin has no rate limit
 			c.Next()

@@ -103,12 +103,113 @@ components:
           example: 123e4567-e89b-12d3-a456-426655440000
         user_id:
           type: string
-          example: 123e4567-e89b-12d3-a456-426655440000
+          example: 123user
         role:
           type: string
           example: admin/user/auditor
       required:
         - role
+        - user_id
+        - tenant_id
+    CreateLogRequestBody:
+      type: object
+      required: [tenant_id, user_id, action, severity, event_timestamp]
+      properties:
+        tenant_id:
+          type: string
+        user_id:
+          type: string
+        session_id:
+          type: string
+        action:
+          $ref: '#/components/schemas/Action'
+        message:
+          type: string
+        resource:
+          type: string
+        resource_id:
+          type: string
+        severity:
+          $ref: '#/components/schemas/Severity'
+        ip_address:
+          type: string
+          format: ipv4
+        user_agent:
+          type: string
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        event_timestamp:
+          type: string
+          format: date-time
+    CreateLogResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID
+        created_at:
+          type: string
+          description: Timestamp
+      required:
+        - id
+        - created_at
+    Severity:
+      type: string
+      enum: [INFO, WARNING, ERROR, CRITICAL]
+    Action:
+      type: string
+      enum: [CREATE, UPDATE, DELETE, VIEW]
+    GetSingleLogResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID
+        tenant_id:
+          type: string
+        user_id:
+          type: string
+        session_id:
+          type: string
+        action:
+          $ref: '#/components/schemas/Action'
+        message:
+          type: string
+        resource:
+          type: string
+        resource_id:
+          type: string
+        severity:
+          $ref: '#/components/schemas/Severity'
+        ip_address:
+          type: string
+          format: ipv4
+        user_agent:
+          type: string
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        metadata:
+          type: object
+          additionalProperties: true
+        event_timestamp:
+          type: string
+          description: Timestamp
+        created_at:
+          type: string
+          description: Timestamp
+      required: [id, tenant_id, user_id, action, severity, event_timestamp, created_at]
+
 paths:
   /auth/token:
     post:
@@ -211,3 +312,113 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Access Forbidden (admin only)
+  /logs:
+    post:
+      operationId: CreateLog
+      description: Create a new log
+      summary: Create a new log
+      tags: 
+      - Logs
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLogRequestBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLogResponse'
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+  /logs/bulk:
+    post:
+      operationId: CreateBulkLogs
+      description: Create bulk logs
+      summary: Create bulk logs
+      tags: 
+      - Logs
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLogRequestBody'
+              type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLogResponse'
+                type: array
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+  /logs/{id}:
+    get:
+      operationId: GetLog
+      description: Get a log by id
+      summary: Get a log by id
+      tags: 
+      - Logs
+      security:
+      - BearerAuth: []
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSingleLogResponse'
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found
