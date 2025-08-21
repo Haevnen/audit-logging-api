@@ -5,11 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package",
+            "name": "API",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "./cmd/audit-logging-api/main.go",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Worker",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "./cmd/async-task/main.go",
             "cwd": "${workspaceFolder}"
         }
 

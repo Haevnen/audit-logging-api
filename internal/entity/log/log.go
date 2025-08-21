@@ -34,7 +34,6 @@ type Log struct {
 	Action         ActionType
 	Severity       Severity
 	EventTimestamp time.Time
-	CreatedAt      time.Time
 
 	// optional
 	Message    *string

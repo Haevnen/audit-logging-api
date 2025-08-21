@@ -28,5 +28,20 @@ services:
       - ./api/gen/specs/openapi/openapi.yaml:/openapi.yaml
     container_name: ${PROJECT_NAME}-swagger
 
+  localstack:
+    image: localstack/localstack:latest
+    container_name: ${PROJECT_NAME}-localstack
+    ports:
+      - "4566:4566"  # Main LocalStack edge port
+    environment:
+      - SERVICES=sqs,s3
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=ap-southeast-1    # Or your desired default
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - ./localstack_bootstrap:/etc/localstack/init/ready.d
+
 volumes:
   pgdata:

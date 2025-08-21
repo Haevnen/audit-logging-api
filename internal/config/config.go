@@ -29,6 +29,16 @@ type Config struct {
 
 	RateLimitBurst int `env:"RATE_LIMIT_BURST"`
 	RateLimitRPS   int `env:"RATE_LIMIT_RPS"`
+
+	SqsLogCleanupQueueURL  string `env:"SQS_LOG_CLEANUP_QUEUE_URL"`
+	SqsLogArchivalQueueURL string `env:"SQS_LOG_ARCHIVAL_QUEUE_URL"`
+	S3ArchiveLogURL        string `env:"S3_ARCHIVE_LOG_URL"`
+	S3ArchiveLogBucketName string `env:"S3_ARCHIVE_LOG_BUCKET_NAME"`
+
+	AwsRegion         string `env:"AWS_REGION"`
+	AwsKey            string `env:"AWS_ACCESS_KEY_ID"`
+	AwsSecret         string `env:"AWS_SECRET_ACCESS_KEY"`
+	LocalStackBaseURL string `env:"LOCALSTACK_BASE_URL"`
 }
 
 func LoadConfig() (config Config, err error) {

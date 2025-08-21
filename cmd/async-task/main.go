@@ -3,24 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/gin-gonic/gin"
 
-	handler "github.com/Haevnen/audit-logging-api/internal/adapter/http"
-	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/config"
-	"github.com/Haevnen/audit-logging-api/internal/infra/middleware"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
+	"github.com/Haevnen/audit-logging-api/internal/worker"
 	"github.com/Haevnen/audit-logging-api/pkg/gormdb"
 	"github.com/Haevnen/audit-logging-api/pkg/logger"
 )
@@ -46,10 +41,6 @@ func start() int {
 		}
 	}()
 
-	// Setup router
-	r := gin.Default()
-	gin.SetMode(cfg.Mode)
-
 	sqsClient, err := NewSQSClient(cfg)
 	if err != nil {
 		logger.WithField("error", err).Fatal("Failed to create SQS client")
@@ -62,7 +53,7 @@ func start() int {
 		return 1
 	}
 
-	registry := registry.NewRegistry(
+	r := registry.NewRegistry(
 		db,
 		cfg.TokenSymmetricKey,
 		sqsClient,
@@ -71,54 +62,42 @@ func start() int {
 		cfg.SqsLogCleanupQueueURL,
 		cfg.S3ArchiveLogBucketName,
 	)
-	handler := handler.New(registry)
-	jwt := registry.Manager()
 
-	// Register health check
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
+	archWorker := worker.NewArchiveWorker(
+		r.QueuePublisher(),
+		r.AsyncTaskRepository(),
+		r.LogRepository(),
+		r.S3Publisher(),
+		r.TxManager(),
+		cfg.SqsLogArchivalQueueURL,
+	)
 
-	// Register handlers
-	api_service.RegisterHandlersWithOptions(r, handler, api_service.GinServerOptions{
-		BaseURL: "/api/v1",
-		Middlewares: []api_service.MiddlewareFunc{
-			middleware.RequireAuth(jwt),
-			middleware.RequireRole(),
-			middleware.RequireRateLimit(cfg.RateLimitRPS, cfg.RateLimitBurst),
-		},
-	})
+	cleanWorker := worker.NewCleanUpWorker(
+		r.QueuePublisher(),
+		r.AsyncTaskRepository(),
+		r.LogRepository(),
+		r.TxManager(),
+		cfg.SqsLogCleanupQueueURL,
+	)
 
-	// Start server
-	s := &http.Server{
-		Addr:    cfg.GetURLBase(),
-		Handler: r,
-	}
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	go func() {
-		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.WithField("error", err).Fatal("Failed to start server")
-		}
+		archWorker.Start(ctx)
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	logger.Info("Shutting down server...")
+	go func() {
+		cleanWorker.Start(ctx)
+	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := s.Shutdown(ctx); err != nil {
-		logger.Fatal("Server Shutdown:", err)
-		return 1
-	}
+	<-sigChan
+	logger.Info("Shutting down gracefully...")
+	cancel() // signal worker to stop
 
-	select {
-	case <-ctx.Done():
-		logger.Info("timeout of 5 seconds")
-	}
-	logger.Info("Server Exited")
 	return 0
 }
 

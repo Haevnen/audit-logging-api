@@ -1,2 +1,29 @@
-time="2025-08-20T09:53:55Z" level=info msg="INSERT INTO \"tenants\" (\"id\",\"name\",\"created_at\",\"updated_at\") VALUES ('f19c83fb-9b3d-4931-ae37-eb5dd2249bd4','Thanh1','2025-08-20 09:53:55.131','2025-08-20 09:53:55.131') [44.684708ms] rows:1"
-time="2025-08-20T09:54:03Z" level=info msg="SELECT * FROM \"tenants\" ORDER BY created_at asc [15.598833ms] rows:2"
+time="2025-08-21T17:23:18Z" level=info msg="received message" beforeDate="2025-09-16 00:00:00 +0000 UTC" taskId=0f2da8ba-7e30-4ac6-b74a-6f44129e70fc
+time="2025-08-21T17:23:18Z" level=info msg="SELECT * FROM \"async_tasks\" WHERE task_id = '0f2da8ba-7e30-4ac6-b74a-6f44129e70fc' ORDER BY \"async_tasks\".\"task_id\" LIMIT 1 [92.803791ms] rows:1"
+time="2025-08-21Ttime="2025-08-21T17:24:00Z" level=info msg="INSERT INTO \"logs\" (\"id\",\"tenant_id\",\"user_id\",\"action\",\"severity\",\"event_timestamp\",\"message\",\"session_id\",\"resource\",\"resource_id\",\"ip_address\",\"user_agent\",\"before\",\"after\",\"metadata\") VALUES ('66f18ffc-a297-491a-9da5-d2b27cc76a0b','6755efeb-d5c5-4245-8525-cf24667bc980','user43','UPDATE','INFO','2025-07-16 14:30:12','User profile updated: changed email and phone number','sess-9999',NULL,'42','192.168.1.100','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0',NULL,NULL,'{\"correlation_id\":\"corr-7890\",\"request_id\":\"req-5678\",\"source\":\"web-portal\"}'),('68cdb9cc-d5b5-4661-bc04-47de78575fe9','6755efeb-d5c5-4245-8525-cf24667bc980','user44','UPDATE','INFO','2025-07-16 14:30:12','User profile updated: changed email and phone number','sess-9999',NULL,'42','192.168.1.100','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0',NULL,NULL,'{\"correlation_id\":\"corr-7890\",\"request_id\":\"req-5678\",\"source\":\"web-portal\"}') [26.813833ms] rows:2"
+time="2025-08-21T17:24:09Z" level=info msg="INSERT INTO \"async_tasks\" (\"task_id\",\"status\",\"task_type\",\"payload\",\"created_at\",\"updated_at\",\"tenant_uid\",\"user_id\",\"error_msg\") VALUES ('62f2b290-4a46-4196-b942-67c36c05d883','pending','archive',NULL,'2025-08-21 17:24:09.497','2025-08-21 17:24:09.497',NULL,'123e4567',NULL) [6.721083ms] rows:1"
+b-1bbf0bcbd4ea
+time="2025-08-21T17:23:18Z" level=info msg="Published cleanup message"
+time="2025-08-21T17:23:18Z" level=info msg="SELECT * FROM \"async_tasks\" WHERE task_id = '22ccba15-9056-455b-b8ab-1bbf0bcbd4ea' ORDER BY \"async_tasks\".\"task_id\" LIMIT 1 [40.73175ms] rows:1"
+time="2025-08-21T17:23:27Z" level=info msg="UPDATE \"async_tasks\" SET \"status\"='running',\"updated_at\"='2025-08-21 17:23:27.488' WHERE task_id = '22ccba15-9056-455b-b8ab-1bbf0bcbd4ea' [70.283ms] rows:1"
+time="2025-08-21T17:23:34Z" level=info msg="DELETE FROM \"logs\" WHERE event_timestamp < '2025-09-16 00:00:00' [39.9165ms] rows:3"
+time="2025-08-21T17:23:35Z" level=info msg="UPDATE \"async_tasks\" SET \"status\"='succeeded',\"updated_at\"='2025-08-21 17:23:35.788' WHERE task_id = '22ccba15-9056-455b-b8ab-1bbf0bcbd4ea' [20.54475ms] rows:1"
+time="2025-08-21T17:23:37Z" level=info msg="cleanup succeeded" taskId=22ccba15-9056-455b-b8ab-1bbf0bcbd4ea
+time="2025-08-21T17:24:09Z" level=info msg="received message" beforeDate="2025-09-16 00:00:00 +0000 UTC" taskId=62f2b290-4a46-4196-b942-67c36c05d883
+time="2025-08-21T17:24:09Z" level=info msg="SELECT * FROM \"async_tasks\" WHERE task_id = '62f2b290-4a46-4196-b942-67c36c05d883' ORDER BY \"async_tasks\".\"task_id\" LIMIT 1 [10.715666ms] rows:1"
+time="2025-08-21T17:24:09Z" level=info msg="UPDATE \"async_tasks\" SET \"status\"='running',\"updated_at\"='2025-08-21 17:24:09.557' WHERE task_id = '62f2b290-4a46-4196-b942-67c36c05d883' [17.947542ms] rows:1"
+time="2025-08-21T17:24:09Z" level=info msg="SELECT * FROM \"logs\" WHERE event_timestamp < '2025-09-16 00:00:00' ORDER BY \"logs\".\"id\" LIMIT 1000 [12.219042ms] rows:2"
+time="2025-08-21T17:24:09Z" level=info msg="SELECT * FROM \"logs\" [4.137708ms] rows:2"
+time="2025-08-21T17:24:09Z" level=info msg="Uploading logs to S3"
+time="2025-08-21T17:24:09Z" level=info msg="Uploaded logs to S3"
+time="2025-08-21T17:24:09Z" level=info msg="Updating status to success"
+time="2025-08-21T17:24:09Z" level=info msg="UPDATE \"async_tasks\" SET \"status\"='succeeded',\"updated_at\"='2025-08-21 17:24:09.615' WHERE task_id = '62f2b290-4a46-4196-b942-67c36c05d883' [4.09325ms] rows:1"
+time="2025-08-21T17:24:09Z" level=info msg="Publishing cleanup message"
+time="2025-08-21T17:24:09Z" level=info msg="INSERT INTO \"async_tasks\" (\"task_id\",\"status\",\"task_type\",\"payload\",\"created_at\",\"updated_at\",\"tenant_uid\",\"user_id\",\"error_msg\") VALUES ('d2d8099b-5bcb-4e10-92ff-203da1a1df8c','pending','log_cleanup',NULL,'2025-08-21 17:24:09.619','2025-08-21 17:24:09.619',NULL,'123e4567',NULL) [4.549333ms] rows:1"
+time="2025-08-21T17:24:09Z" level=info msg="cleanup worker received message" beforeDate="2025-09-16 00:00:00 +0000 UTC" taskId=d2d8099b-5bcb-4e10-92ff-203da1a1df8c
+time="2025-08-21T17:24:09Z" level=info msg="Published cleanup message"
+time="2025-08-21T17:24:09Z" level=info msg="SELECT * FROM \"async_tasks\" WHERE task_id = 'd2d8099b-5bcb-4e10-92ff-203da1a1df8c' ORDER BY \"async_tasks\".\"task_id\" LIMIT 1 [5.869625ms] rows:1"
+time="2025-08-21T17:24:14Z" level=info msg="UPDATE \"async_tasks\" SET \"status\"='running',\"updated_at\"='2025-08-21 17:24:14.532' WHERE task_id = 'd2d8099b-5bcb-4e10-92ff-203da1a1df8c' [31.364833ms] rows:1"
+time="2025-08-21T17:24:14Z" level=info msg="DELETE FROM \"logs\" WHERE event_timestamp < '2025-09-16 00:00:00' [9.45025ms] rows:2"
+time="2025-08-21T17:24:18Z" level=info msg="UPDATE \"async_tasks\" SET \"status\"='succeeded',\"updated_at\"='2025-08-21 17:24:18.431' WHERE task_id = 'd2d8099b-5bcb-4e10-92ff-203da1a1df8c' [6.247583ms] rows:1"
+time="2025-08-21T17:24:18Z" level=info msg="cleanup succeeded" taskId=d2d8099b-5bcb-4e10-92ff-203da1a1df8c

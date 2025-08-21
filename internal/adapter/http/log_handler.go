@@ -18,12 +18,14 @@ import (
 type logHandler struct {
 	CreateUC *log.CreateLogUseCase
 	GetUC    *log.GetLogUseCase
+	DeleteUC *log.DeleteLogUseCase
 }
 
 func newLogHandler(r *registry.Registry) logHandler {
 	return logHandler{
 		CreateUC: r.CreateLogUseCase(),
 		GetUC:    r.GetLogUseCase(),
+		DeleteUC: r.DeleteLogUseCase(),
 	}
 }
 
@@ -48,8 +50,8 @@ func (h logHandler) CreateLog(g *gin.Context) {
 	}
 
 	resp := api_service.CreateLogResponse{
-		Id:        logCreated.ID,
-		CreatedAt: logCreated.CreatedAt.Format(DateTimeFormat),
+		Id:             logCreated.ID,
+		EventTimestamp: logCreated.EventTimestamp.Format(DateTimeFormat),
 	}
 	g.JSON(http.StatusCreated, resp)
 }
@@ -82,8 +84,8 @@ func (h logHandler) CreateBulkLogs(c *gin.Context) {
 	resp := make([]api_service.CreateLogResponse, 0, len(logsCreated))
 	for _, l := range logsCreated {
 		resp = append(resp, api_service.CreateLogResponse{
-			Id:        l.ID,
-			CreatedAt: l.CreatedAt.Format(DateTimeFormat),
+			Id:             l.ID,
+			EventTimestamp: l.EventTimestamp.Format(DateTimeFormat),
 		})
 	}
 	c.JSON(http.StatusCreated, resp)
@@ -131,7 +133,6 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 		Action:         api_service.Action(log.Action),
 		Severity:       api_service.Severity(log.Severity),
 		EventTimestamp: log.EventTimestamp.Format(DateTimeFormat),
-		CreatedAt:      log.CreatedAt.Format(DateTimeFormat),
 		Message:        log.Message,
 		SessionId:      log.SessionID,
 		Resource:       log.Resource,
@@ -144,6 +145,19 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+// (DELETE /logs/cleanup)
+func (h logHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsParams) {
+	tenantId := getClaimTenant(c)
+	userId := c.GetString(constant.UserID)
+
+	if err := h.DeleteUC.Execute(c.Request.Context(), tenantId, userId, params.BeforeDate); err != nil {
+		SendError(c, err.Error(), apperror.ErrInternalServer)
+		return
+	}
+
+	c.JSON(http.StatusOK, "cleanup successful")
 }
 
 func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequestBody) (entity_log.Log, string, error) {

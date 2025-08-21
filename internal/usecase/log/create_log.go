@@ -2,7 +2,6 @@ package log
 
 import (
 	"context"
-	"time"
 
 	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/Haevnen/audit-logging-api/internal/interactor"
@@ -23,9 +22,6 @@ func (uc *CreateLogUseCase) Execute(ctx context.Context, log log.Log) (*log.Log,
 	if log.ID == "" {
 		log.ID = uuid.New().String()
 	}
-	if log.CreatedAt.IsZero() {
-		log.CreatedAt = time.Now()
-	}
 
 	if err := uc.Repo.Create(ctx, &log); err != nil {
 		return nil, err
@@ -38,16 +34,12 @@ func (uc *CreateLogUseCase) ExecuteBulk(ctx context.Context, logs []log.Log) ([]
 		if logs[i].ID == "" {
 			logs[i].ID = uuid.New().String()
 		}
-		if logs[i].CreatedAt.IsZero() {
-			logs[i].CreatedAt = time.Now()
-		}
 	}
 
-	err := uc.TxManager.TransactionExec(ctx, func(txCtx context.Context) error {
+	if err := uc.TxManager.TransactionExec(ctx, func(txCtx context.Context) error {
 		db := uc.TxManager.GetTx(txCtx)
 		return uc.Repo.CreateBulk(txCtx, db, logs)
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 

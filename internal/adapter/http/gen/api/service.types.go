@@ -58,8 +58,8 @@ type CreateLogRequestBody struct {
 
 // CreateLogResponse defines model for CreateLogResponse.
 type CreateLogResponse struct {
-	// CreatedAt Timestamp
-	CreatedAt string `json:"created_at"`
+	// EventTimestamp Timestamp
+	EventTimestamp string `json:"event_timestamp"`
 
 	// Id UUID
 	Id string `json:"id"`
@@ -104,9 +104,6 @@ type GetSingleLogResponse struct {
 	After  *map[string]interface{} `json:"after,omitempty"`
 	Before *map[string]interface{} `json:"before,omitempty"`
 
-	// CreatedAt Timestamp
-	CreatedAt string `json:"created_at"`
-
 	// EventTimestamp Timestamp
 	EventTimestamp string `json:"event_timestamp"`
 
@@ -147,6 +144,11 @@ type Tenant struct {
 
 // CreateBulkLogsJSONBody defines parameters for CreateBulkLogs.
 type CreateBulkLogsJSONBody = []CreateLogRequestBody
+
+// CleanupLogsParams defines parameters for CleanupLogs.
+type CleanupLogsParams struct {
+	BeforeDate time.Time `form:"beforeDate" json:"beforeDate"`
+}
 
 // GenerateTokenJSONRequestBody defines body for GenerateToken for application/json ContentType.
 type GenerateTokenJSONRequestBody = GenerateTokenRequestBody

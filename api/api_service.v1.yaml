@@ -154,12 +154,12 @@ components:
         id:
           type: string
           description: UUID
-        created_at:
+        event_timestamp:
           type: string
           description: Timestamp
       required:
         - id
-        - created_at
+        - event_timestamp
     Severity:
       type: string
       enum: [INFO, WARNING, ERROR, CRITICAL]
@@ -205,10 +205,7 @@ components:
         event_timestamp:
           type: string
           description: Timestamp
-        created_at:
-          type: string
-          description: Timestamp
-      required: [id, tenant_id, user_id, action, severity, event_timestamp, created_at]
+      required: [id, tenant_id, user_id, action, severity, event_timestamp]
 
 paths:
   /auth/token:
@@ -423,3 +420,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found
+  /logs/cleanup:
+    delete:
+      operationId: CleanupLogs
+      description: Cleanup logs
+      summary: Cleanup logs
+      tags: 
+      - Logs
+      security:
+      - BearerAuth: []
+      parameters:
+      - in: query
+        name: beforeDate
+        required: true
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden

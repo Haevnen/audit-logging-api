@@ -229,6 +229,39 @@ paths:
       summary: Get a log by id
       tags:
       - Logs
+  /logs/cleanup:
+    delete:
+      description: Cleanup logs
+      operationId: CleanupLogs
+      parameters:
+      - explode: true
+        in: query
+        name: beforeDate
+        required: true
+        schema:
+          format: date-time
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+      security:
+      - BearerAuth: []
+      summary: Cleanup logs
+      tags:
+      - Logs
 components:
   schemas:
     Tenant:
@@ -393,17 +426,17 @@ components:
       type: object
     CreateLogResponse:
       example:
-        created_at: created_at
         id: id
+        event_timestamp: event_timestamp
       properties:
         id:
           description: UUID
           type: string
-        created_at:
+        event_timestamp:
           description: Timestamp
           type: string
       required:
-      - created_at
+      - event_timestamp
       - id
       type: object
     Severity:
@@ -429,7 +462,6 @@ components:
         before:
           key: '{}'
         session_id: session_id
-        created_at: created_at
         ip_address: ip_address
         message: message
         event_timestamp: event_timestamp
@@ -476,12 +508,8 @@ components:
         event_timestamp:
           description: Timestamp
           type: string
-        created_at:
-          description: Timestamp
-          type: string
       required:
       - action
-      - created_at
       - event_timestamp
       - id
       - severity

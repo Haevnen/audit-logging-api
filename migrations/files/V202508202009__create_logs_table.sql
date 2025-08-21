@@ -16,15 +16,14 @@ CREATE TABLE IF NOT EXISTS logs (
     after JSONB,
     metadata JSONB,
     event_timestamp TIMESTAMPTZ NOT NULL, -- when the event happened
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, -- ingestion time
 
-    PRIMARY KEY (tenant_id, created_at, id)
+    PRIMARY KEY (tenant_id, event_timestamp, id)
 );
 
 -- Convert logs into hypertable
 SELECT create_hypertable(
     'logs',
-    'created_at',
+    'event_timestamp',
     partitioning_column => 'tenant_id',
     number_partitions => 8,
     chunk_time_interval => INTERVAL '1 day');
@@ -32,7 +31,7 @@ SELECT create_hypertable(
 -- Enable native compression
 ALTER TABLE logs SET (
     timescaledb.compress,
-    timescaledb.compress_orderby = 'created_at DESC',
+    timescaledb.compress_orderby = 'event_timestamp DESC',
     timescaledb.compress_segmentby = 'tenant_id'
 );
 

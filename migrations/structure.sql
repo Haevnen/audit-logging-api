@@ -30,15 +30,56 @@ CREATE EXTENSION IF NOT EXISTS timescaledb WITH SCHEMA public;
 COMMENT ON EXTENSION timescaledb IS 'Enables scalable inserts and complex queries for time-series data (Community Edition)';
 
 
+--
+-- Name: async_task_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.async_task_status AS ENUM (
+    'pending',
+    'running',
+    'succeeded',
+    'failed'
+);
+
+
+--
+-- Name: async_task_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.async_task_type AS ENUM (
+    'log_cleanup',
+    'archive',
+    'export',
+    'reindex'
+);
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: _compressed_hypertable_16; Type: TABLE; Schema: _timescaledb_internal; Owner: -
+-- Name: _compressed_hypertable_2; Type: TABLE; Schema: _timescaledb_internal; Owner: -
 --
 
-CREATE TABLE _timescaledb_internal._compressed_hypertable_16 (
+CREATE TABLE _timescaledb_internal._compressed_hypertable_2 (
+);
+
+
+--
+-- Name: async_tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.async_tasks (
+    task_id uuid DEFAULT gen_random_uuid() NOT NULL,
+    status public.async_task_status NOT NULL,
+    task_type public.async_task_type NOT NULL,
+    payload jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    tenant_uid text,
+    user_id text NOT NULL,
+    error_msg text
 );
 
 
@@ -61,8 +102,7 @@ CREATE TABLE public.logs (
     before jsonb,
     after jsonb,
     metadata jsonb,
-    event_timestamp timestamp with time zone NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    event_timestamp timestamp with time zone NOT NULL
 );
 
 
@@ -79,11 +119,19 @@ CREATE TABLE public.tenants (
 
 
 --
+-- Name: async_tasks async_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.async_tasks
+    ADD CONSTRAINT async_tasks_pkey PRIMARY KEY (task_id);
+
+
+--
 -- Name: logs logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.logs
-    ADD CONSTRAINT logs_pkey PRIMARY KEY (tenant_id, created_at, id);
+    ADD CONSTRAINT logs_pkey PRIMARY KEY (tenant_id, event_timestamp, id);
 
 
 --
@@ -95,24 +143,24 @@ ALTER TABLE ONLY public.tenants
 
 
 --
--- Name: logs_created_at_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: logs_event_timestamp_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX logs_created_at_idx ON public.logs USING btree (created_at DESC);
-
-
---
--- Name: logs_tenant_id_created_at_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX logs_tenant_id_created_at_idx ON public.logs USING btree (tenant_id, created_at DESC);
+CREATE INDEX logs_event_timestamp_idx ON public.logs USING btree (event_timestamp DESC);
 
 
 --
--- Name: _compressed_hypertable_16 ts_insert_blocker; Type: TRIGGER; Schema: _timescaledb_internal; Owner: -
+-- Name: logs_tenant_id_event_timestamp_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE TRIGGER ts_insert_blocker BEFORE INSERT ON _timescaledb_internal._compressed_hypertable_16 FOR EACH ROW EXECUTE FUNCTION _timescaledb_functions.insert_blocker();
+CREATE INDEX logs_tenant_id_event_timestamp_idx ON public.logs USING btree (tenant_id, event_timestamp DESC);
+
+
+--
+-- Name: _compressed_hypertable_2 ts_insert_blocker; Type: TRIGGER; Schema: _timescaledb_internal; Owner: -
+--
+
+CREATE TRIGGER ts_insert_blocker BEFORE INSERT ON _timescaledb_internal._compressed_hypertable_2 FOR EACH ROW EXECUTE FUNCTION _timescaledb_functions.insert_blocker();
 
 
 --
