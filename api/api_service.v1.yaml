@@ -360,8 +360,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateLogRequestBody'
               type: array
+              items:
+                $ref: '#/components/schemas/CreateLogRequestBody'
       responses:
         "200":
           content:

@@ -1,18 +1,17 @@
 package handler
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/apperror"
+	"github.com/Haevnen/audit-logging-api/internal/auth"
 	"github.com/Haevnen/audit-logging-api/internal/constant"
 	entity_log "github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
 	"github.com/Haevnen/audit-logging-api/internal/usecase/log"
 	"github.com/gin-gonic/gin"
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -97,7 +96,8 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 		return
 	}
 
-	log, err := h.GetUC.Execute(c.Request.Context(), id)
+	claimTenantId := getClaimTenant(c)
+	log, err := h.GetUC.Execute(c.Request.Context(), id, claimTenantId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			SendError(c, err.Error(), apperror.ErrRecordNotFound)
@@ -146,36 +146,11 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func MarshallData(data *map[string]interface{}) (*datatypes.JSON, error) {
-	if data == nil {
-		return nil, nil
-	}
-
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	d := datatypes.JSON(jsonBytes)
-	return &d, nil
-}
-func JSONToMap(j *datatypes.JSON) (*map[string]interface{}, error) {
-	if j == nil || len(*j) == 0 {
-		// No value stored in DB
-		return nil, nil
-	}
-	var m map[string]interface{}
-	if err := json.Unmarshal(*j, &m); err != nil {
-		return nil, err
-	}
-	return &m, nil
-}
-
 func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequestBody) (entity_log.Log, string, error) {
-	tenantID := g.GetString(constant.TenantID)
+	claimTenantId := getClaimTenant(g)
 
-	if tenantID != body.TenantId {
-		return entity_log.Log{}, "tenant id mismatch", apperror.ErrInvalidRequestInput
+	if err := validateMismatchTenant(claimTenantId, body.TenantId); err != nil {
+		return entity_log.Log{}, "tenant id mismatch", err
 	}
 
 	// validate required fields
@@ -209,7 +184,7 @@ func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequ
 	}
 
 	return entity_log.Log{
-		TenantID:       tenantID,
+		TenantID:       body.TenantId,
 		UserID:         body.UserId,
 		SessionID:      body.SessionId,
 		Message:        body.Message,
@@ -224,4 +199,22 @@ func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequ
 		Metadata:       metaDataJSON,
 		EventTimestamp: body.EventTimestamp,
 	}, "", nil
+}
+
+func getClaimTenant(g *gin.Context) string {
+	claimTenantId := g.GetString(constant.TenantID)
+	role := g.MustGet(constant.Role).(auth.Role)
+
+	if role == auth.RoleAdmin {
+		return ""
+	}
+	return claimTenantId
+}
+
+func validateMismatchTenant(claimTenantId, bodyTenantId string) error {
+	if len(claimTenantId) == 0 || claimTenantId == bodyTenantId {
+		// admin
+		return nil
+	}
+	return apperror.ErrForbidden
 }

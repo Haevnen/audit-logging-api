@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
+
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/entity/log"
+	"gorm.io/datatypes"
 )
 
 // Convert from OpenAPI Action → Domain ActionType
@@ -35,4 +38,29 @@ func toEntitySeverity(s api_service.Severity) log.Severity {
 	default:
 		return ""
 	}
+}
+
+func MarshallData(data *map[string]interface{}) (*datatypes.JSON, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	d := datatypes.JSON(jsonBytes)
+	return &d, nil
+}
+func JSONToMap(j *datatypes.JSON) (*map[string]interface{}, error) {
+	if j == nil || len(*j) == 0 {
+		// No value stored in DB
+		return nil, nil
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal(*j, &m); err != nil {
+		return nil, err
+	}
+	return &m, nil
 }

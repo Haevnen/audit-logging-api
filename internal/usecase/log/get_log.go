@@ -15,6 +15,6 @@ func NewGetLogUseCase(repo repository.LogRepository) *GetLogUseCase {
 	return &GetLogUseCase{Repo: repo}
 }
 
-func (uc *GetLogUseCase) Execute(ctx context.Context, id string) (*log.Log, error) {
-	return uc.Repo.GetByID(ctx, id)
+func (uc *GetLogUseCase) Execute(ctx context.Context, id string, tenantId string) (*log.Log, error) {
+	return uc.Repo.GetByID(ctx, id, tenantId)
 }

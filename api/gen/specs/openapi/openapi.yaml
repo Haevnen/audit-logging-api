@@ -159,7 +159,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateLogRequestBody'
+              items:
+                $ref: '#/components/schemas/CreateLogRequestBody'
+              type: array
         required: true
       responses:
         "200":

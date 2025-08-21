@@ -145,6 +145,9 @@ type Tenant struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
+// CreateBulkLogsJSONBody defines parameters for CreateBulkLogs.
+type CreateBulkLogsJSONBody = []CreateLogRequestBody
+
 // GenerateTokenJSONRequestBody defines body for GenerateToken for application/json ContentType.
 type GenerateTokenJSONRequestBody = GenerateTokenRequestBody
 
@@ -152,7 +155,7 @@ type GenerateTokenJSONRequestBody = GenerateTokenRequestBody
 type CreateLogJSONRequestBody = CreateLogRequestBody
 
 // CreateBulkLogsJSONRequestBody defines body for CreateBulkLogs for application/json ContentType.
-type CreateBulkLogsJSONRequestBody = CreateLogRequestBody
+type CreateBulkLogsJSONRequestBody = CreateBulkLogsJSONBody
 
 // CreateTenantJSONRequestBody defines body for CreateTenant for application/json ContentType.
 type CreateTenantJSONRequestBody = CreateTenantRequestBody
