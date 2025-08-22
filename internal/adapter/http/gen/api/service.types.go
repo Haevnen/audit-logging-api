@@ -121,6 +121,39 @@ type GetSingleLogResponse struct {
 	UserId     string                  `json:"user_id"`
 }
 
+// LogStat defines model for LogStat.
+type LogStat struct {
+	// CREATE Number of CREATE logs
+	CREATE int64 `json:"CREATE"`
+
+	// CRITICAL Number of CRITICAL logs
+	CRITICAL int64 `json:"CRITICAL"`
+
+	// DELETE Number of DELETE logs
+	DELETE int64 `json:"DELETE"`
+
+	// Day The day of the aggregated stats
+	Day string `json:"Day"`
+
+	// ERROR Number of ERROR logs
+	ERROR int64 `json:"ERROR"`
+
+	// INFO Number of INFO logs
+	INFO int64 `json:"INFO"`
+
+	// Total Total logs for the day
+	Total int64 `json:"Total"`
+
+	// UPDATE Number of UPDATE logs
+	UPDATE int64 `json:"UPDATE"`
+
+	// VIEW Number of VIEW logs
+	VIEW int64 `json:"VIEW"`
+
+	// WARNING Number of WARNING logs
+	WARNING int64 `json:"WARNING"`
+}
+
 // Pong defines model for Pong.
 type Pong struct {
 	Ping string `json:"ping"`
@@ -148,6 +181,12 @@ type CreateBulkLogsJSONBody = []CreateLogRequestBody
 // CleanupLogsParams defines parameters for CleanupLogs.
 type CleanupLogsParams struct {
 	BeforeDate time.Time `form:"beforeDate" json:"beforeDate"`
+}
+
+// GetLogsStatParams defines parameters for GetLogsStat.
+type GetLogsStatParams struct {
+	StartDate time.Time  `form:"startDate" json:"startDate"`
+	EndDate   *time.Time `form:"endDate,omitempty" json:"endDate,omitempty"`
 }
 
 // GenerateTokenJSONRequestBody defines body for GenerateToken for application/json ContentType.

@@ -18,6 +18,7 @@ type LogRepository interface {
 	GetByID(ctx context.Context, id string, tenantId string) (*log.Log, error)
 	FindLogsForArchival(ctx context.Context, tenantId *string, beforeDate time.Time) ([]log.Log, error)
 	CleanupLogsBefore(ctx context.Context, db *gorm.DB, tenantId *string, beforeDate time.Time) error
+	GetStats(ctx context.Context, tenantId string, startTime, endTime time.Time) ([]log.LogStats, error)
 }
 
 type logRepository struct {
@@ -85,4 +86,49 @@ func (r *logRepository) CleanupLogsBefore(ctx context.Context, db *gorm.DB, tena
 		q = q.Where("tenant_id = ?", *tenantId)
 	}
 	return q.Delete(&log.Log{}).Error
+}
+
+func (r *logRepository) GetStats(ctx context.Context, tenantId string, startTime, endTime time.Time) ([]log.LogStats, error) {
+	var stats []log.LogStats
+
+	if len(tenantId) > 0 {
+		query := `
+        SELECT
+			day,
+			SUM(log_count) AS total_count,
+			SUM(CASE WHEN action = 'CREATE' THEN log_count ELSE 0 END) AS create_count,
+			SUM(CASE WHEN action = 'UPDATE' THEN log_count ELSE 0 END) AS update_count,
+			SUM(CASE WHEN action = 'DELETE' THEN log_count ELSE 0 END) AS delete_count,
+			SUM(CASE WHEN action = 'VIEW'   THEN log_count ELSE 0 END) AS view_count,
+			SUM(CASE WHEN severity = 'INFO'     THEN log_count ELSE 0 END) AS info_count,
+			SUM(CASE WHEN severity = 'ERROR'    THEN log_count ELSE 0 END) AS error_count,
+			SUM(CASE WHEN severity = 'WARNING'  THEN log_count ELSE 0 END) AS warning_count,
+			SUM(CASE WHEN severity = 'CRITICAL' THEN log_count ELSE 0 END) AS critical_count
+		FROM log_stats_daily
+		WHERE tenant_id = ? AND day BETWEEN ? AND ?
+		GROUP BY day
+		ORDER BY day DESC;`
+		err := r.db.WithContext(ctx).Raw(query, tenantId, startTime, endTime).Scan(&stats).Error
+		return stats, err
+	}
+
+	query := `
+        SELECT
+			day,
+			SUM(log_count) AS total,
+			SUM(CASE WHEN action = 'CREATE' THEN log_count ELSE 0 END) AS action_create,
+			SUM(CASE WHEN action = 'UPDATE' THEN log_count ELSE 0 END) AS action_update,
+			SUM(CASE WHEN action = 'DELETE' THEN log_count ELSE 0 END) AS action_delete,
+			SUM(CASE WHEN action = 'VIEW'   THEN log_count ELSE 0 END) AS action_view,
+			SUM(CASE WHEN severity = 'INFO'     THEN log_count ELSE 0 END) AS severity_info,
+			SUM(CASE WHEN severity = 'ERROR'    THEN log_count ELSE 0 END) AS severity_error,
+			SUM(CASE WHEN severity = 'WARNING'  THEN log_count ELSE 0 END) AS severity_warning,
+			SUM(CASE WHEN severity = 'CRITICAL' THEN log_count ELSE 0 END) AS severity_critical
+		FROM log_stats_daily
+		WHERE day BETWEEN ? AND ?
+		GROUP BY day
+		ORDER BY day DESC;`
+	err := r.db.WithContext(ctx).Raw(query, startTime, endTime).Scan(&stats).Error
+	return stats, err
+
 }

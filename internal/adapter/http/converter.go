@@ -64,3 +64,22 @@ func JSONToMap(j *datatypes.JSON) (*map[string]interface{}, error) {
 	}
 	return &m, nil
 }
+
+func toLogStatsResponse(stats []log.LogStats) []api_service.LogStat {
+	var resp []api_service.LogStat
+	for _, s := range stats {
+		resp = append(resp, api_service.LogStat{
+			Day:      s.Day.Format("2006-01-02"),
+			Total:    s.Total,
+			CREATE:   s.ActionCreate,
+			UPDATE:   s.ActionUpdate,
+			DELETE:   s.ActionDelete,
+			VIEW:     s.ActionView,
+			INFO:     s.SeverityInfo,
+			ERROR:    s.SeverityError,
+			WARNING:  s.SeverityWarning,
+			CRITICAL: s.SeverityCritical,
+		})
+	}
+	return resp
+}

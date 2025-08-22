@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/apperror"
@@ -19,6 +20,7 @@ type logHandler struct {
 	CreateUC *log.CreateLogUseCase
 	GetUC    *log.GetLogUseCase
 	DeleteUC *log.DeleteLogUseCase
+	StatsUC  *log.GetStatsUseCase
 }
 
 func newLogHandler(r *registry.Registry) logHandler {
@@ -26,6 +28,7 @@ func newLogHandler(r *registry.Registry) logHandler {
 		CreateUC: r.CreateLogUseCase(),
 		GetUC:    r.GetLogUseCase(),
 		DeleteUC: r.DeleteLogUseCase(),
+		StatsUC:  r.GetStatsUseCase(),
 	}
 }
 
@@ -158,6 +161,29 @@ func (h logHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsPa
 	}
 
 	c.JSON(http.StatusOK, "cleanup successful")
+}
+
+// (GET /logs/stat)
+func (h logHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatParams) {
+	tenantId := getClaimTenant(c)
+
+	endDate := time.Now().UTC()
+	if params.EndDate != nil {
+		endDate = *params.EndDate
+	}
+
+	if endDate.Before(params.StartDate) {
+		SendError(c, "end date must be after start date", apperror.ErrInvalidRequestInput)
+		return
+	}
+
+	stats, err := h.StatsUC.Execute(c.Request.Context(), tenantId, params.StartDate, endDate)
+	if err != nil {
+		SendError(c, err.Error(), apperror.ErrInternalServer)
+		return
+	}
+
+	c.JSON(http.StatusOK, toLogStatsResponse(stats))
 }
 
 func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequestBody) (entity_log.Log, string, error) {

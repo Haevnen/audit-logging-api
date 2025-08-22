@@ -46,3 +46,16 @@ type Log struct {
 	After      *datatypes.JSON
 	Metadata   *datatypes.JSON
 }
+
+type LogStats struct {
+	Day              time.Time
+	Total            int64
+	ActionCreate     int64
+	ActionUpdate     int64
+	ActionDelete     int64
+	ActionView       int64
+	SeverityInfo     int64
+	SeverityError    int64
+	SeverityWarning  int64
+	SeverityCritical int64
+}

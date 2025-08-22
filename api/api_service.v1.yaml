@@ -206,6 +206,49 @@ components:
           type: string
           description: Timestamp
       required: [id, tenant_id, user_id, action, severity, event_timestamp]
+    LogStat:
+      type: object
+      properties:
+        Day:
+          type: string
+          description: The day of the aggregated stats
+        Total:
+          type: integer
+          format: int64
+          description: Total logs for the day
+        CREATE:
+          type: integer
+          format: int64
+          description: Number of CREATE logs
+        UPDATE:
+          type: integer
+          format: int64
+          description: Number of UPDATE logs
+        DELETE:
+          type: integer
+          format: int64
+          description: Number of DELETE logs
+        VIEW:
+          type: integer
+          format: int64
+          description: Number of VIEW logs
+        INFO:
+          type: integer
+          format: int64
+          description: Number of INFO logs
+        ERROR:
+          type: integer
+          format: int64
+          description: Number of ERROR logs
+        WARNING:
+          type: integer
+          format: int64
+          description: Number of WARNING logs
+        CRITICAL:
+          type: integer
+          format: int64
+          description: Number of CRITICAL logs
+      required: [Day, Total, CREATE, UPDATE, DELETE, VIEW, INFO, ERROR, WARNING, CRITICAL]
 
 paths:
   /auth/token:
@@ -438,6 +481,48 @@ paths:
           format: date-time
       responses:
         "200":
+          description: Successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+  /logs/stats:
+    get:
+      operationId: GetLogsStat
+      description: Return aggregated log statistics for actions and severity (refresh every 5 mins)
+      summary: Get logs stat
+      tags: 
+      - Logs
+      security:
+      - BearerAuth: []
+      parameters:
+      - in: query
+        name: startDate
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: endDate
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogStat'
           description: Successful operation
         "401":
           content:

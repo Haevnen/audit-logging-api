@@ -68,6 +68,10 @@ func (r *Registry) DeleteLogUseCase() *log.DeleteLogUseCase {
 	return log.NewDeleteLogUseCase(r.AsyncTaskRepository(), r.QueuePublisher(), r.TxManager())
 }
 
+func (r *Registry) GetStatsUseCase() *log.GetStatsUseCase {
+	return log.NewGetStatsUseCase(r.LogRepository())
+}
+
 func (r *Registry) QueuePublisher() service.SQSPublisher {
 	return service.NewSQSPublisherImpl(r.sqsClient, r.archiveQueueURL, r.cleanUpQueueURL)
 }
