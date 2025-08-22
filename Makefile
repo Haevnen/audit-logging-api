@@ -4,7 +4,7 @@ run:
 	docker-compose -f docker-compose.yml -p $(PROJECT_NAME) up -d
 
 down:
-	docker-compose -f docker-compose.yml -p $(PROJECT_NAME) down --remove-orphans -v
+	docker-compose -f docker-compose.yml -p $(PROJECT_NAME) down --remove-orphans
 
 server:
 	go run cmd/audit-logging-api/main.go

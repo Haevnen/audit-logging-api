@@ -39,6 +39,8 @@ type Config struct {
 	AwsKey            string `env:"AWS_ACCESS_KEY_ID"`
 	AwsSecret         string `env:"AWS_SECRET_ACCESS_KEY"`
 	LocalStackBaseURL string `env:"LOCALSTACK_BASE_URL"`
+
+	OpenSearchURL string `env:"OPENSEARCH_URL"`
 }
 
 func LoadConfig() (config Config, err error) {

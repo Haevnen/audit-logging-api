@@ -18,6 +18,7 @@ type CleanUpWorker struct {
 	taskRepo     repository.AsyncTaskRepository
 	logRepo      repository.LogRepository
 	txManager    *interactor.TxManager
+	openSearch   service.OpenSearchPublisher
 	cleanupQueue string
 }
 
@@ -26,6 +27,7 @@ func NewCleanUpWorker(
 	taskRepo repository.AsyncTaskRepository,
 	logRepo repository.LogRepository,
 	txManager *interactor.TxManager,
+	openSearch service.OpenSearchPublisher,
 	cleanupQueue string,
 ) *CleanUpWorker {
 	return &CleanUpWorker{
@@ -33,6 +35,7 @@ func NewCleanUpWorker(
 		taskRepo:     taskRepo,
 		logRepo:      logRepo,
 		txManager:    txManager,
+		openSearch:   openSearch,
 		cleanupQueue: cleanupQueue,
 	}
 }
@@ -91,8 +94,15 @@ func (w *CleanUpWorker) handleMessage(ctx context.Context, msg service.ReceiveMe
 		db := w.txManager.GetTx(txCtx)
 
 		// Delete logs
-		if err := w.logRepo.CleanupLogsBefore(txCtx, db, task.TenantUID, *beforeDate); err != nil {
+		ids, err := w.logRepo.CleanupLogsBefore(txCtx, db, task.TenantUID, *beforeDate)
+		if err != nil {
 			return err
+		}
+
+		if len(ids) > 0 {
+			if err := w.openSearch.DeleteLogsBulk(txCtx, ids); err != nil {
+				return err
+			}
 		}
 
 		// Update status → COMPLETED

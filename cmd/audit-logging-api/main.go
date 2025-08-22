@@ -70,6 +70,7 @@ func start() int {
 		cfg.SqsLogArchivalQueueURL,
 		cfg.SqsLogCleanupQueueURL,
 		cfg.S3ArchiveLogBucketName,
+		cfg.OpenSearchURL,
 	)
 	handler := handler.New(registry)
 	jwt := registry.Manager()

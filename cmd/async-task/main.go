@@ -61,6 +61,7 @@ func start() int {
 		cfg.SqsLogArchivalQueueURL,
 		cfg.SqsLogCleanupQueueURL,
 		cfg.S3ArchiveLogBucketName,
+		cfg.OpenSearchURL,
 	)
 
 	archWorker := worker.NewArchiveWorker(
@@ -77,6 +78,7 @@ func start() int {
 		r.AsyncTaskRepository(),
 		r.LogRepository(),
 		r.TxManager(),
+		r.OpenSearchPublisher(),
 		cfg.SqsLogCleanupQueueURL,
 	)
 

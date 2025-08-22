@@ -17,7 +17,7 @@ type LogRepository interface {
 	CreateBulk(ctx context.Context, db *gorm.DB, logs []log.Log) error
 	GetByID(ctx context.Context, id string, tenantId string) (*log.Log, error)
 	FindLogsForArchival(ctx context.Context, tenantId *string, beforeDate time.Time) ([]log.Log, error)
-	CleanupLogsBefore(ctx context.Context, db *gorm.DB, tenantId *string, beforeDate time.Time) error
+	CleanupLogsBefore(ctx context.Context, db *gorm.DB, tenantId *string, beforeDate time.Time) ([]string, error)
 	GetStats(ctx context.Context, tenantId string, startTime, endTime time.Time) ([]log.LogStats, error)
 }
 
@@ -76,16 +76,28 @@ func (r *logRepository) FindLogsForArchival(ctx context.Context, tenantID *strin
 	return allLogs, nil
 }
 
-func (r *logRepository) CleanupLogsBefore(ctx context.Context, db *gorm.DB, tenantId *string, beforeDate time.Time) error {
+func (r *logRepository) CleanupLogsBefore(ctx context.Context, db *gorm.DB, tenantId *string, beforeDate time.Time) ([]string, error) {
 	if db == nil {
 		db = r.db
 	}
 
-	q := db.WithContext(ctx).Where("event_timestamp < ?", beforeDate)
+	var ids []string
+	q := db.WithContext(ctx).Model(&log.Log{}).Where("event_timestamp < ?", beforeDate)
 	if tenantId != nil && len(*tenantId) > 0 {
 		q = q.Where("tenant_id = ?", *tenantId)
 	}
-	return q.Delete(&log.Log{}).Error
+
+	err := q.Pluck("id", &ids).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) > 0 {
+		if err := db.WithContext(ctx).Where("id IN ?", ids).Delete(&log.Log{}).Error; err != nil {
+			return nil, err
+		}
+	}
+	return ids, nil
 }
 
 func (r *logRepository) GetStats(ctx context.Context, tenantId string, startTime, endTime time.Time) ([]log.LogStats, error) {

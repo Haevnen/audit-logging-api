@@ -32,7 +32,7 @@ services:
     image: localstack/localstack:latest
     container_name: ${PROJECT_NAME}-localstack
     ports:
-      - "4566:4566"  # Main LocalStack edge port
+      - "4566:4566"
     environment:
       - SERVICES=sqs,s3
       - DEBUG=1
@@ -42,6 +42,49 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
     volumes:
       - ./localstack_bootstrap:/etc/localstack/init/ready.d
+  
+  opensearch:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: ${PROJECT_NAME}-opensearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "DISABLE_SECURITY_PLUGIN=true"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9600:9600" # performance analyzer
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  
+  opensearch-init:
+    image: curlimages/curl:8.5.0
+    depends_on:
+      - opensearch
+    volumes:
+      - ./opensearch_bootstrap:/init
+    entrypoint: ["/bin/sh", "/init/create-logs-index.sh"]
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.1
+    container_name: ${PROJECT_NAME}-os-dashboards
+    ports:
+      - "5601:5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+    depends_on:
+      - opensearch
 
 volumes:
   pgdata:
+  opensearch_data:

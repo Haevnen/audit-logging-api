@@ -21,9 +21,10 @@ type Registry struct {
 	archiveQueueURL string
 	cleanUpQueueURL string
 	s3BucketName    string
+	openSearchURL   string
 }
 
-func NewRegistry(db *gorm.DB, key string, sqsClient *sqs.Client, s3Client *s3.Client, archiveQueueURL string, cleanUpQueueURL string, s3BucketName string) *Registry {
+func NewRegistry(db *gorm.DB, key string, sqsClient *sqs.Client, s3Client *s3.Client, archiveQueueURL string, cleanUpQueueURL string, s3BucketName string, openSearchURL string) *Registry {
 	return &Registry{
 		db:              db,
 		key:             key,
@@ -32,6 +33,7 @@ func NewRegistry(db *gorm.DB, key string, sqsClient *sqs.Client, s3Client *s3.Cl
 		cleanUpQueueURL: cleanUpQueueURL,
 		s3Client:        s3Client,
 		s3BucketName:    s3BucketName,
+		openSearchURL:   openSearchURL,
 	}
 }
 
@@ -57,7 +59,7 @@ func (r *Registry) ListTenantsUseCase() *tenant.ListTenantsUseCase {
 }
 
 func (r *Registry) CreateLogUseCase() *log.CreateLogUseCase {
-	return log.NewCreateLogUseCase(r.LogRepository(), r.TxManager())
+	return log.NewCreateLogUseCase(r.LogRepository(), r.TxManager(), r.OpenSearchPublisher())
 }
 
 func (r *Registry) GetLogUseCase() *log.GetLogUseCase {
@@ -78,6 +80,10 @@ func (r *Registry) QueuePublisher() service.SQSPublisher {
 
 func (r *Registry) S3Publisher() service.S3Publisher {
 	return service.NewS3PublisherImpl(r.s3Client, r.s3BucketName)
+}
+
+func (r *Registry) OpenSearchPublisher() service.OpenSearchPublisher {
+	return service.NewOpenSearchPublisher(r.openSearchURL, "logs")
 }
 
 func (r *Registry) Manager() *auth.Manager {
