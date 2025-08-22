@@ -232,12 +232,12 @@ func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequ
 		return entity_log.Log{}, "invalid severity", apperror.ErrInvalidRequestInput
 	}
 
-	beforeJSON, err := MarshallData(body.Before)
+	beforeJSON, err := MarshallData(body.BeforeState)
 	if err != nil {
 		return entity_log.Log{}, err.Error(), apperror.ErrInvalidRequestInput
 	}
 
-	afterJSON, err := MarshallData(body.After)
+	afterJSON, err := MarshallData(body.AfterState)
 	if err != nil {
 		return entity_log.Log{}, err.Error(), apperror.ErrInvalidRequestInput
 	}
@@ -258,8 +258,8 @@ func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequ
 		Severity:       severity,
 		IPAddress:      body.IpAddress,
 		UserAgent:      body.UserAgent,
-		Before:         beforeJSON,
-		After:          afterJSON,
+		BeforeState:    beforeJSON,
+		AfterState:     afterJSON,
 		Metadata:       metaDataJSON,
 		EventTimestamp: body.EventTimestamp,
 	}, "", nil

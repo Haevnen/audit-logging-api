@@ -136,10 +136,10 @@ components:
           format: ipv4
         user_agent:
           type: string
-        before:
+        before_state:
           type: object
           additionalProperties: true
-        after:
+        after_state:
           type: object
           additionalProperties: true
         metadata:
@@ -193,10 +193,10 @@ components:
           format: ipv4
         user_agent:
           type: string
-        before:
+        before_state:
           type: object
           additionalProperties: true
-        after:
+        after_state:
           type: object
           additionalProperties: true
         metadata:

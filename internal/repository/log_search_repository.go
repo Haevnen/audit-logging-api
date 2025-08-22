@@ -113,6 +113,24 @@ func (r *openSearchRepo) Search(ctx context.Context, filters LogSearchFilters) (
 			},
 		})
 	}
+	if filters.Query != nil && *filters.Query != "" {
+		boolQuery["must"] = append(
+			boolQuery["must"].([]map[string]interface{}),
+			map[string]interface{}{
+				"multi_match": map[string]interface{}{
+					"query": *filters.Query,
+					"fields": []string{
+						"Message", // match your mapping exactly
+						"Metadata.*",
+						"BeforeState.*",
+						"AfterState.*",
+					},
+					"type":     "best_fields",
+					"operator": "and",
+				},
+			},
+		)
+	}
 
 	payload, _ := json.Marshal(query)
 	logger.GetLogger().Info(string(payload))

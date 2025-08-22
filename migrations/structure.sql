@@ -82,8 +82,8 @@ CREATE TABLE public.logs (
     ip_address inet,
     user_agent text,
     message text,
-    before jsonb,
-    after jsonb,
+    before_state jsonb,
+    after_state jsonb,
     metadata jsonb,
     event_timestamp timestamp with time zone NOT NULL
 );

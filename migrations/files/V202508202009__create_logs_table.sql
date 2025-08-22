@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS logs (
     ip_address INET,
     user_agent TEXT,
     message TEXT,
-    before JSONB,
-    after JSONB,
+    before_state JSONB,
+    after_state JSONB,
     metadata JSONB,
     event_timestamp TIMESTAMPTZ NOT NULL, -- when the event happened
 

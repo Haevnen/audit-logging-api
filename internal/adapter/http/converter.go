@@ -86,11 +86,11 @@ func toLogStatsResponse(stats []log.LogStats) []api_service.LogStat {
 }
 
 func toSingleLogResponse(l entity_log.Log) (api_service.GetSingleLogResponse, error) {
-	before, err := JSONToMap(l.Before)
+	before, err := JSONToMap(l.BeforeState)
 	if err != nil {
 		return api_service.GetSingleLogResponse{}, err
 	}
-	after, err := JSONToMap(l.After)
+	after, err := JSONToMap(l.AfterState)
 	if err != nil {
 		return api_service.GetSingleLogResponse{}, err
 	}
@@ -113,8 +113,8 @@ func toSingleLogResponse(l entity_log.Log) (api_service.GetSingleLogResponse, er
 		ResourceId:     l.ResourceID,
 		IpAddress:      l.IPAddress,
 		UserAgent:      l.UserAgent,
-		Before:         before,
-		After:          after,
+		BeforeState:    before,
+		AfterState:     after,
 		Metadata:       metadata,
 	}, nil
 }

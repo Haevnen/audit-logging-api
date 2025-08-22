@@ -520,17 +520,17 @@ components:
         metadata:
           key: '{}'
         resource: resource
-        before:
-          key: '{}'
         session_id: session_id
         ip_address: ip_address
         message: message
         event_timestamp: 2000-01-23T04:56:07.000+00:00
         user_id: user_id
         resource_id: resource_id
-        after:
+        before_state:
           key: '{}'
         user_agent: user_agent
+        after_state:
+          key: '{}'
       properties:
         tenant_id:
           type: string
@@ -553,10 +553,10 @@ components:
           type: string
         user_agent:
           type: string
-        before:
+        before_state:
           additionalProperties: true
           type: object
-        after:
+        after_state:
           additionalProperties: true
           type: object
         metadata:
@@ -607,8 +607,6 @@ components:
         metadata:
           key: '{}'
         resource: resource
-        before:
-          key: '{}'
         session_id: session_id
         ip_address: ip_address
         message: message
@@ -616,9 +614,11 @@ components:
         user_id: user_id
         resource_id: resource_id
         id: id
-        after:
+        before_state:
           key: '{}'
         user_agent: user_agent
+        after_state:
+          key: '{}'
       properties:
         id:
           description: UUID
@@ -644,10 +644,10 @@ components:
           type: string
         user_agent:
           type: string
-        before:
+        before_state:
           additionalProperties: true
           type: object
-        after:
+        after_state:
           additionalProperties: true
           type: object
         metadata:
@@ -737,8 +737,6 @@ components:
           metadata:
             key: '{}'
           resource: resource
-          before:
-            key: '{}'
           session_id: session_id
           ip_address: ip_address
           message: message
@@ -746,15 +744,15 @@ components:
           user_id: user_id
           resource_id: resource_id
           id: id
-          after:
+          before_state:
             key: '{}'
           user_agent: user_agent
+          after_state:
+            key: '{}'
         - tenant_id: tenant_id
           metadata:
             key: '{}'
           resource: resource
-          before:
-            key: '{}'
           session_id: session_id
           ip_address: ip_address
           message: message
@@ -762,9 +760,11 @@ components:
           user_id: user_id
           resource_id: resource_id
           id: id
-          after:
+          before_state:
             key: '{}'
           user_agent: user_agent
+          after_state:
+            key: '{}'
         page_size: 1
       properties:
         total:

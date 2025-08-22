@@ -36,15 +36,15 @@ type Log struct {
 	EventTimestamp time.Time
 
 	// optional
-	Message    *string
-	SessionID  *string
-	Resource   *string
-	ResourceID *string
-	IPAddress  *string
-	UserAgent  *string
-	Before     *datatypes.JSON
-	After      *datatypes.JSON
-	Metadata   *datatypes.JSON
+	Message     *string
+	SessionID   *string
+	Resource    *string
+	ResourceID  *string
+	IPAddress   *string
+	UserAgent   *string
+	BeforeState *datatypes.JSON
+	AfterState  *datatypes.JSON
+	Metadata    *datatypes.JSON
 }
 
 type LogStats struct {

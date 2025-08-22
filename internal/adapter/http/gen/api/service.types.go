@@ -41,8 +41,8 @@ type Action string
 // CreateLogRequestBody defines model for CreateLogRequestBody.
 type CreateLogRequestBody struct {
 	Action         Action                  `json:"action"`
-	After          *map[string]interface{} `json:"after,omitempty"`
-	Before         *map[string]interface{} `json:"before,omitempty"`
+	AfterState     *map[string]interface{} `json:"after_state,omitempty"`
+	BeforeState    *map[string]interface{} `json:"before_state,omitempty"`
 	EventTimestamp time.Time               `json:"event_timestamp"`
 	IpAddress      *string                 `json:"ip_address,omitempty"`
 	Message        *string                 `json:"message,omitempty"`
@@ -100,9 +100,9 @@ type GenerateTokenResponse struct {
 
 // GetSingleLogResponse defines model for GetSingleLogResponse.
 type GetSingleLogResponse struct {
-	Action Action                  `json:"action"`
-	After  *map[string]interface{} `json:"after,omitempty"`
-	Before *map[string]interface{} `json:"before,omitempty"`
+	Action      Action                  `json:"action"`
+	AfterState  *map[string]interface{} `json:"after_state,omitempty"`
+	BeforeState *map[string]interface{} `json:"before_state,omitempty"`
 
 	// EventTimestamp Timestamp
 	EventTimestamp string `json:"event_timestamp"`
