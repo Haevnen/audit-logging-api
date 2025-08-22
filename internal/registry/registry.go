@@ -49,6 +49,10 @@ func (r *Registry) LogRepository() repository.LogRepository {
 	return repository.NewLogRepository(r.db)
 }
 
+func (r *Registry) LogSearchRepository() repository.LogSearchRepository {
+	return repository.NewLogSearchRepository(r.openSearchURL, "logs")
+}
+
 func (r *Registry) CreateTenantUseCase() *tenant.CreateTenantUseCase {
 	return tenant.NewCreateTenantUseCase(r.TenantRepository())
 
@@ -72,6 +76,10 @@ func (r *Registry) DeleteLogUseCase() *log.DeleteLogUseCase {
 
 func (r *Registry) GetStatsUseCase() *log.GetStatsUseCase {
 	return log.NewGetStatsUseCase(r.LogRepository())
+}
+
+func (r *Registry) SearchLogsUseCase() *log.SearchLogsUseCase {
+	return log.NewSearchLogsUseCase(r.LogSearchRepository())
 }
 
 func (r *Registry) QueuePublisher() service.SQSPublisher {

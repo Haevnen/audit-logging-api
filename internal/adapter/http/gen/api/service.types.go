@@ -175,6 +175,36 @@ type Tenant struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
+// InlineResponse200 defines model for inline_response_200.
+type InlineResponse200 struct {
+	Items      []GetSingleLogResponse `json:"items"`
+	PageNumber int                    `json:"page_number"`
+	PageSize   int                    `json:"page_size"`
+	Total      int64                  `json:"total"`
+}
+
+// SearchLogsParams defines parameters for SearchLogs.
+type SearchLogsParams struct {
+	// UserId Filter by user
+	UserId *string `form:"user_id,omitempty" json:"user_id,omitempty"`
+
+	// Action Filter by action type
+	Action *Action `form:"action,omitempty" json:"action,omitempty"`
+
+	// Resource Filter by resource type
+	Resource *string `form:"resource,omitempty" json:"resource,omitempty"`
+
+	// Severity Filter by severity
+	Severity  *Severity  `form:"severity,omitempty" json:"severity,omitempty"`
+	StartTime *time.Time `form:"startTime,omitempty" json:"startTime,omitempty"`
+	EndTime   *time.Time `form:"endTime,omitempty" json:"endTime,omitempty"`
+
+	// Q Full-text search across message + metadata
+	Q          *string `form:"q,omitempty" json:"q,omitempty"`
+	PageNumber *int    `form:"pageNumber,omitempty" json:"pageNumber,omitempty"`
+	PageSize   *int    `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+}
+
 // CreateBulkLogsJSONBody defines parameters for CreateBulkLogs.
 type CreateBulkLogsJSONBody = []CreateLogRequestBody
 

@@ -11,24 +11,28 @@ import (
 	"github.com/Haevnen/audit-logging-api/internal/constant"
 	entity_log "github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
+	"github.com/Haevnen/audit-logging-api/internal/repository"
 	"github.com/Haevnen/audit-logging-api/internal/usecase/log"
+	"github.com/Haevnen/audit-logging-api/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 type logHandler struct {
-	CreateUC *log.CreateLogUseCase
-	GetUC    *log.GetLogUseCase
-	DeleteUC *log.DeleteLogUseCase
-	StatsUC  *log.GetStatsUseCase
+	CreateUC    *log.CreateLogUseCase
+	GetUC       *log.GetLogUseCase
+	DeleteUC    *log.DeleteLogUseCase
+	StatsUC     *log.GetStatsUseCase
+	SearchLogUC *log.SearchLogsUseCase
 }
 
 func newLogHandler(r *registry.Registry) logHandler {
 	return logHandler{
-		CreateUC: r.CreateLogUseCase(),
-		GetUC:    r.GetLogUseCase(),
-		DeleteUC: r.DeleteLogUseCase(),
-		StatsUC:  r.GetStatsUseCase(),
+		CreateUC:    r.CreateLogUseCase(),
+		GetUC:       r.GetLogUseCase(),
+		DeleteUC:    r.DeleteLogUseCase(),
+		StatsUC:     r.GetStatsUseCase(),
+		SearchLogUC: r.SearchLogsUseCase(),
 	}
 }
 
@@ -112,41 +116,10 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 		return
 	}
 
-	before, err := JSONToMap(log.Before)
+	resp, err := toSingleLogResponse(*log)
 	if err != nil {
 		SendError(c, err.Error(), apperror.ErrInternalServer)
-		return
 	}
-	after, err := JSONToMap(log.After)
-	if err != nil {
-		SendError(c, err.Error(), apperror.ErrInternalServer)
-		return
-	}
-
-	metadata, err := JSONToMap(log.Metadata)
-	if err != nil {
-		SendError(c, err.Error(), apperror.ErrInternalServer)
-		return
-	}
-
-	resp := api_service.GetSingleLogResponse{
-		Id:             log.ID,
-		UserId:         log.UserID,
-		TenantId:       log.TenantID,
-		Action:         api_service.Action(log.Action),
-		Severity:       api_service.Severity(log.Severity),
-		EventTimestamp: log.EventTimestamp.Format(DateTimeFormat),
-		Message:        log.Message,
-		SessionId:      log.SessionID,
-		Resource:       log.Resource,
-		ResourceId:     log.ResourceID,
-		IpAddress:      log.IPAddress,
-		UserAgent:      log.UserAgent,
-		Before:         before,
-		After:          after,
-		Metadata:       metadata,
-	}
-
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -184,6 +157,57 @@ func (h logHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatPa
 	}
 
 	c.JSON(http.StatusOK, toLogStatsResponse(stats))
+}
+
+// (GET /api/v1/logs/search)
+func (h logHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsParams) {
+	pageNumber, pageSize := 1, constant.MaxPageSize
+	if params.PageNumber != nil && *params.PageNumber > 0 {
+		pageNumber = *params.PageNumber
+	}
+	if params.PageSize != nil && *params.PageSize > 0 && *params.PageSize <= constant.MaxPageSize {
+		pageSize = *params.PageSize
+	}
+
+	tenantId := getClaimTenant(c)
+
+	filters := repository.LogSearchFilters{
+		TenantID:  utils.Ptr(tenantId),
+		UserID:    utils.Ptr(c.Query("user_id")),
+		Action:    utils.Ptr(c.Query("action")),
+		Resource:  utils.Ptr(c.Query("resource")),
+		Severity:  utils.Ptr(c.Query("severity")),
+		StartDate: utils.Ptr(c.Query("startTime")),
+		EndDate:   utils.Ptr(c.Query("endTime")),
+		Query:     utils.Ptr(c.Query("q")),
+		Page:      pageNumber,
+		PageSize:  pageSize,
+	}
+
+	result, err := h.SearchLogUC.Execute(c.Request.Context(), filters)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	logConverted := make([]api_service.GetSingleLogResponse, 0, len(result.Logs))
+	for _, l := range result.Logs {
+		r, err := toSingleLogResponse(l)
+		if err != nil {
+			SendError(c, err.Error(), apperror.ErrInternalServer)
+			return
+		}
+		logConverted = append(logConverted, r)
+	}
+
+	resp := api_service.InlineResponse200{
+		Total:      result.Total,
+		Items:      logConverted,
+		PageNumber: pageNumber,
+		PageSize:   pageSize,
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequestBody) (entity_log.Log, string, error) {

@@ -5,6 +5,7 @@ import (
 
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/entity/log"
+	entity_log "github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"gorm.io/datatypes"
 )
 
@@ -82,4 +83,38 @@ func toLogStatsResponse(stats []log.LogStats) []api_service.LogStat {
 		})
 	}
 	return resp
+}
+
+func toSingleLogResponse(l entity_log.Log) (api_service.GetSingleLogResponse, error) {
+	before, err := JSONToMap(l.Before)
+	if err != nil {
+		return api_service.GetSingleLogResponse{}, err
+	}
+	after, err := JSONToMap(l.After)
+	if err != nil {
+		return api_service.GetSingleLogResponse{}, err
+	}
+
+	metadata, err := JSONToMap(l.Metadata)
+	if err != nil {
+		return api_service.GetSingleLogResponse{}, err
+	}
+
+	return api_service.GetSingleLogResponse{
+		Id:             l.ID,
+		UserId:         l.UserID,
+		TenantId:       l.TenantID,
+		Action:         api_service.Action(l.Action),
+		Severity:       api_service.Severity(l.Severity),
+		EventTimestamp: l.EventTimestamp.Format(DateTimeFormat),
+		Message:        l.Message,
+		SessionId:      l.SessionID,
+		Resource:       l.Resource,
+		ResourceId:     l.ResourceID,
+		IpAddress:      l.IPAddress,
+		UserAgent:      l.UserAgent,
+		Before:         before,
+		After:          after,
+		Metadata:       metadata,
+	}, nil
 }

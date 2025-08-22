@@ -118,6 +118,106 @@ paths:
       tags:
       - Tenants
   /logs:
+    get:
+      description: Search logs
+      operationId: SearchLogs
+      parameters:
+      - description: Filter by user
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by action type
+        explode: true
+        in: query
+        name: action
+        required: false
+        schema:
+          $ref: '#/components/schemas/Action'
+        style: form
+      - description: Filter by resource type
+        explode: true
+        in: query
+        name: resource
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by severity
+        explode: true
+        in: query
+        name: severity
+        required: false
+        schema:
+          $ref: '#/components/schemas/Severity'
+        style: form
+      - explode: true
+        in: query
+        name: startTime
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: endTime
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Full-text search across message + metadata
+        explode: true
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: pageNumber
+        required: false
+        schema:
+          default: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: pageSize
+        required: false
+        schema:
+          default: 10
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+          description: Search results
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+      security:
+      - BearerAuth: []
+      summary: Advanced search logs
+      tags:
+      - Logs
     post:
       description: Create a new log
       operationId: CreateLog
@@ -627,6 +727,62 @@ components:
       - UPDATE
       - VIEW
       - WARNING
+      type: object
+    inline_response_200:
+      example:
+        total: 0
+        page_number: 6
+        items:
+        - tenant_id: tenant_id
+          metadata:
+            key: '{}'
+          resource: resource
+          before:
+            key: '{}'
+          session_id: session_id
+          ip_address: ip_address
+          message: message
+          event_timestamp: event_timestamp
+          user_id: user_id
+          resource_id: resource_id
+          id: id
+          after:
+            key: '{}'
+          user_agent: user_agent
+        - tenant_id: tenant_id
+          metadata:
+            key: '{}'
+          resource: resource
+          before:
+            key: '{}'
+          session_id: session_id
+          ip_address: ip_address
+          message: message
+          event_timestamp: event_timestamp
+          user_id: user_id
+          resource_id: resource_id
+          id: id
+          after:
+            key: '{}'
+          user_agent: user_agent
+        page_size: 1
+      properties:
+        total:
+          format: int64
+          type: integer
+        page_number:
+          type: integer
+        page_size:
+          type: integer
+        items:
+          items:
+            $ref: '#/components/schemas/GetSingleLogResponse'
+          type: array
+      required:
+      - items
+      - page_number
+      - page_size
+      - total
       type: object
   securitySchemes:
     BearerAuth:

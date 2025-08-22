@@ -7,4 +7,5 @@ const (
 	UserID                  = "user_id"
 	Role                    = "role"
 	BaseURL                 = "/api/v1"
+	MaxPageSize             = 100
 )
