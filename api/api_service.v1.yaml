@@ -611,4 +611,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Access Forbidden
+  /logs/stream:
+    get:
+      summary: Stream logs in real time
+      description: Establishes a WebSocket connection to stream logs in real time.
+      operationId: StreamLogs
+      tags:
+        - Logs
+      parameters:
+        - in: query
+          name: tenant_id
+          schema: { type: string }
+      responses:
+        "101":
+          description: WebSocket upgrade successful
+        "400":
+          description: Invalid request
+
 

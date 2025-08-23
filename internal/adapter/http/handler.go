@@ -17,6 +17,7 @@ type Handler struct {
 	tenantHandler
 	tokenHandler
 	logHandler
+	logStreamHandler
 }
 
 func New(r *registry.Registry) Handler {
@@ -24,6 +25,7 @@ func New(r *registry.Registry) Handler {
 	h.tenantHandler = newTenantHandler(r)
 	h.tokenHandler = newTokenHandler(r)
 	h.logHandler = newLogHandler(r)
+	h.logStreamHandler = newLogStreamHandler(r)
 	return h
 }
 

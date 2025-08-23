@@ -20,7 +20,5 @@
             "program": "./cmd/async-task/main.go",
             "cwd": "${workspaceFolder}"
         }
-
-
     ]
 }

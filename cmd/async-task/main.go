@@ -60,8 +60,10 @@ func start() int {
 		s3Client,
 		cfg.SqsLogArchivalQueueURL,
 		cfg.SqsLogCleanupQueueURL,
+		cfg.SqsIndexQueueURL,
 		cfg.S3ArchiveLogBucketName,
 		cfg.OpenSearchURL,
+		cfg.RedisAddr,
 	)
 
 	archWorker := worker.NewArchiveWorker(
@@ -82,6 +84,14 @@ func start() int {
 		cfg.SqsLogCleanupQueueURL,
 	)
 
+	indexWorker := worker.NewIndexWorker(
+		r.QueuePublisher(),
+		r.TxManager(),
+		r.AsyncTaskRepository(),
+		r.OpenSearchPublisher(),
+		cfg.SqsIndexQueueURL,
+	)
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -94,6 +104,10 @@ func start() int {
 
 	go func() {
 		cleanWorker.Start(ctx)
+	}()
+
+	go func() {
+		indexWorker.Start(ctx)
 	}()
 
 	<-sigChan

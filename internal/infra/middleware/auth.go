@@ -24,7 +24,7 @@ var roleMap = map[string][]auth.Role{
 	"GET:/logs/stats":      {auth.RoleAdmin, auth.RoleAuditor, auth.RoleUser},
 	"POST:/logs/bulk":      {auth.RoleAdmin, auth.RoleUser},
 	"DELETE:/logs/cleanup": {auth.RoleAdmin, auth.RoleUser},
-	"WS:/logs/stream":      {auth.RoleAdmin, auth.RoleAuditor, auth.RoleUser},
+	"GET:/logs/stream":     {auth.RoleAdmin, auth.RoleAuditor, auth.RoleUser},
 	"GET:/tenants":         {auth.RoleAdmin},
 	"POST:/tenants":        {auth.RoleAdmin},
 }

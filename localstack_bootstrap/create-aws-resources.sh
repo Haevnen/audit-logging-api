@@ -15,6 +15,11 @@ awslocal sqs create-queue \
   --attributes VisibilityTimeout=300,MessageRetentionPeriod=86400,DelaySeconds=0,ReceiveMessageWaitTimeSeconds=20
 echo "SQS queue 'log-archival-queue' created!"
 
+awslocal sqs create-queue \
+  --queue-name index-queue \
+  --attributes VisibilityTimeout=300,MessageRetentionPeriod=86400,DelaySeconds=0,ReceiveMessageWaitTimeSeconds=20
+echo "SQS queue 'index-queue' created!"
+
 # Create S3 Bucket for log archiving before deleting
 awslocal s3 mb s3://log-archive
 echo "S3 bucket 'log-archive' created!"

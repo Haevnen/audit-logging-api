@@ -3,43 +3,67 @@ package log
 import (
 	"context"
 
+	"github.com/Haevnen/audit-logging-api/internal/entity/async_task"
 	entitylog "github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/Haevnen/audit-logging-api/internal/interactor"
 	"github.com/Haevnen/audit-logging-api/internal/repository"
 	"github.com/Haevnen/audit-logging-api/internal/service"
-	"github.com/Haevnen/audit-logging-api/pkg/logger"
 	"github.com/google/uuid"
 )
 
 type CreateLogUseCase struct {
-	Repo                repository.LogRepository
-	TxManager           *interactor.TxManager
-	OpenSearchPublisher service.OpenSearchPublisher
+	Repo           repository.LogRepository
+	AsyncTaskRepo  repository.AsyncTaskRepository
+	TxManager      *interactor.TxManager
+	QueuePublisher service.SQSPublisher
+	PubSub         service.PubSub
 }
 
-func NewCreateLogUseCase(repo repository.LogRepository, txManager *interactor.TxManager, openSearch service.OpenSearchPublisher) *CreateLogUseCase {
-	return &CreateLogUseCase{Repo: repo, TxManager: txManager, OpenSearchPublisher: openSearch}
+func NewCreateLogUseCase(repo repository.LogRepository, txManager *interactor.TxManager, queuePublisher service.SQSPublisher, pubSub service.PubSub, asyncTaskRepo repository.AsyncTaskRepository) *CreateLogUseCase {
+	return &CreateLogUseCase{Repo: repo, TxManager: txManager, QueuePublisher: queuePublisher, PubSub: pubSub, AsyncTaskRepo: asyncTaskRepo}
 }
 
-func (uc *CreateLogUseCase) Execute(ctx context.Context, log entitylog.Log) (*entitylog.Log, error) {
+func (uc *CreateLogUseCase) Execute(ctx context.Context, tenantId, userId string, log entitylog.Log) (*entitylog.Log, error) {
 	if log.ID == "" {
 		log.ID = uuid.New().String()
 	}
 
-	if err := uc.Repo.Create(ctx, &log); err != nil {
+	// Start a transaction to write log to db, publish SQS message to worker to index opensearch
+	if err := uc.TxManager.TransactionExec(ctx, func(txCtx context.Context) error {
+		db := uc.TxManager.GetTx(txCtx)
+		// 1. Write to DB
+		if err := uc.Repo.CreateBulk(txCtx, db, []entitylog.Log{log}); err != nil {
+			return err
+		}
+
+		// 2. Create a corresponding task in asyncTask table
+		task := &async_task.AsyncTask{
+			TaskID:   uuid.New().String(),
+			TaskType: async_task.TaskReindex,
+			Status:   async_task.StatusPending,
+			UserID:   userId,
+		}
+
+		if len(tenantId) > 0 {
+			task.TenantUID = &tenantId
+		}
+
+		if _, err := uc.AsyncTaskRepo.Create(txCtx, db, task); err != nil {
+			return err
+		}
+
+		// 3. Publish message to SQS
+		return uc.QueuePublisher.PublishIndexMessage(txCtx, task.TaskID, []entitylog.Log{log})
+	}); err != nil {
 		return nil, err
 	}
 
-	go func(l entitylog.Log) {
-		if err := uc.OpenSearchPublisher.IndexLog(context.Background(), l); err != nil {
-			logger.GetLogger().Errorf("failed to index log to opensearch: %v", err)
-		}
-	}(log)
-
+	// Broadcast log to redis
+	_ = uc.PubSub.BroadcastLog(ctx, log)
 	return &log, nil
 }
 
-func (uc *CreateLogUseCase) ExecuteBulk(ctx context.Context, logs []entitylog.Log) ([]entitylog.Log, error) {
+func (uc *CreateLogUseCase) ExecuteBulk(ctx context.Context, tenantId, userId string, logs []entitylog.Log) ([]entitylog.Log, error) {
 	for i := range logs {
 		if logs[i].ID == "" {
 			logs[i].ID = uuid.New().String()
@@ -48,16 +72,34 @@ func (uc *CreateLogUseCase) ExecuteBulk(ctx context.Context, logs []entitylog.Lo
 
 	if err := uc.TxManager.TransactionExec(ctx, func(txCtx context.Context) error {
 		db := uc.TxManager.GetTx(txCtx)
-		return uc.Repo.CreateBulk(txCtx, db, logs)
+		if err := uc.Repo.CreateBulk(txCtx, db, logs); err != nil {
+			return err
+		}
+
+		// 2. Create a corresponding task in asyncTask table
+		task := &async_task.AsyncTask{
+			TaskID:   uuid.New().String(),
+			TaskType: async_task.TaskReindex,
+			Status:   async_task.StatusPending,
+			UserID:   userId,
+		}
+
+		if len(tenantId) > 0 {
+			task.TenantUID = &tenantId
+		}
+
+		if _, err := uc.AsyncTaskRepo.Create(txCtx, db, task); err != nil {
+			return err
+		}
+
+		// 3. Publish message to SQS
+		return uc.QueuePublisher.PublishIndexMessage(txCtx, task.TaskID, logs)
 	}); err != nil {
 		return nil, err
 	}
 
-	go func(logs []entitylog.Log) {
-		if err := uc.OpenSearchPublisher.IndexLogsBulk(context.Background(), logs); err != nil {
-			logger.GetLogger().Errorf("failed to index logs bulk to opensearch: %v", err)
-		}
-	}(logs)
+	// Broadcast logs to redis
+	_ = uc.PubSub.BroadcastLogs(ctx, logs)
 
 	return logs, nil
 

@@ -32,6 +32,7 @@ type Config struct {
 
 	SqsLogCleanupQueueURL  string `env:"SQS_LOG_CLEANUP_QUEUE_URL"`
 	SqsLogArchivalQueueURL string `env:"SQS_LOG_ARCHIVAL_QUEUE_URL"`
+	SqsIndexQueueURL       string `env:"SQS_INDEX_QUEUE_URL"`
 	S3ArchiveLogURL        string `env:"S3_ARCHIVE_LOG_URL"`
 	S3ArchiveLogBucketName string `env:"S3_ARCHIVE_LOG_BUCKET_NAME"`
 
@@ -41,6 +42,7 @@ type Config struct {
 	LocalStackBaseURL string `env:"LOCALSTACK_BASE_URL"`
 
 	OpenSearchURL string `env:"OPENSEARCH_URL"`
+	RedisAddr     string `env:"REDIS_ADDR"`
 }
 
 func LoadConfig() (config Config, err error) {

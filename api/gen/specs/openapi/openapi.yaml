@@ -410,6 +410,26 @@ paths:
       summary: Get logs stat
       tags:
       - Logs
+  /logs/stream:
+    get:
+      description: Establishes a WebSocket connection to stream logs in real time.
+      operationId: StreamLogs
+      parameters:
+      - explode: true
+        in: query
+        name: tenant_id
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "101":
+          description: WebSocket upgrade successful
+        "400":
+          description: Invalid request
+      summary: Stream logs in real time
+      tags:
+      - Logs
 components:
   schemas:
     Tenant:

@@ -69,8 +69,10 @@ func start() int {
 		s3Client,
 		cfg.SqsLogArchivalQueueURL,
 		cfg.SqsLogCleanupQueueURL,
+		cfg.SqsIndexQueueURL,
 		cfg.S3ArchiveLogBucketName,
 		cfg.OpenSearchURL,
+		cfg.RedisAddr,
 	)
 	handler := handler.New(registry)
 	jwt := registry.Manager()

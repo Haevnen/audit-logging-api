@@ -20,20 +20,24 @@ type Registry struct {
 	key             string
 	archiveQueueURL string
 	cleanUpQueueURL string
+	indexQueueURL   string
 	s3BucketName    string
 	openSearchURL   string
+	redisAddr       string
 }
 
-func NewRegistry(db *gorm.DB, key string, sqsClient *sqs.Client, s3Client *s3.Client, archiveQueueURL string, cleanUpQueueURL string, s3BucketName string, openSearchURL string) *Registry {
+func NewRegistry(db *gorm.DB, key string, sqsClient *sqs.Client, s3Client *s3.Client, archiveQueueURL, cleanUpQueueURL, indexQueueURL, s3BucketName, openSearchURL, redisAddr string) *Registry {
 	return &Registry{
 		db:              db,
 		key:             key,
 		sqsClient:       sqsClient,
 		archiveQueueURL: archiveQueueURL,
 		cleanUpQueueURL: cleanUpQueueURL,
+		indexQueueURL:   indexQueueURL,
 		s3Client:        s3Client,
 		s3BucketName:    s3BucketName,
 		openSearchURL:   openSearchURL,
+		redisAddr:       redisAddr,
 	}
 }
 
@@ -63,7 +67,7 @@ func (r *Registry) ListTenantsUseCase() *tenant.ListTenantsUseCase {
 }
 
 func (r *Registry) CreateLogUseCase() *log.CreateLogUseCase {
-	return log.NewCreateLogUseCase(r.LogRepository(), r.TxManager(), r.OpenSearchPublisher())
+	return log.NewCreateLogUseCase(r.LogRepository(), r.TxManager(), r.QueuePublisher(), r.PubSub(), r.AsyncTaskRepository())
 }
 
 func (r *Registry) GetLogUseCase() *log.GetLogUseCase {
@@ -83,7 +87,7 @@ func (r *Registry) SearchLogsUseCase() *log.SearchLogsUseCase {
 }
 
 func (r *Registry) QueuePublisher() service.SQSPublisher {
-	return service.NewSQSPublisherImpl(r.sqsClient, r.archiveQueueURL, r.cleanUpQueueURL)
+	return service.NewSQSPublisherImpl(r.sqsClient, r.archiveQueueURL, r.cleanUpQueueURL, r.indexQueueURL)
 }
 
 func (r *Registry) S3Publisher() service.S3Publisher {
@@ -92,6 +96,10 @@ func (r *Registry) S3Publisher() service.S3Publisher {
 
 func (r *Registry) OpenSearchPublisher() service.OpenSearchPublisher {
 	return service.NewOpenSearchPublisher(r.openSearchURL, "logs")
+}
+
+func (r *Registry) PubSub() service.PubSub {
+	return service.NewPubSubImpl(r.redisAddr)
 }
 
 func (r *Registry) Manager() *auth.Manager {

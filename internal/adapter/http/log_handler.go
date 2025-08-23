@@ -38,6 +38,9 @@ func newLogHandler(r *registry.Registry) logHandler {
 
 // (POST /logs)
 func (h logHandler) CreateLog(g *gin.Context) {
+	userId := g.GetString(constant.UserID)
+	tenantId := getClaimTenant(g)
+
 	var body api_service.CreateLogRequestBody
 	if err := bindRequestBody(g, &body); err != nil {
 		SendError(g, err.Error(), apperror.ErrInvalidRequestInput)
@@ -50,7 +53,7 @@ func (h logHandler) CreateLog(g *gin.Context) {
 		return
 	}
 
-	logCreated, err := h.CreateUC.Execute(g.Request.Context(), e)
+	logCreated, err := h.CreateUC.Execute(g.Request.Context(), tenantId, userId, e)
 	if err != nil {
 		SendError(g, err.Error(), apperror.ErrInternalServer)
 		return
@@ -65,6 +68,9 @@ func (h logHandler) CreateLog(g *gin.Context) {
 
 // (POST /logs/bulk)
 func (h logHandler) CreateBulkLogs(c *gin.Context) {
+	tenantId := getClaimTenant(c)
+	userId := c.GetString(constant.UserID)
+
 	var body []api_service.CreateLogRequestBody
 	if err := bindRequestBody(c, &body); err != nil {
 		SendError(c, err.Error(), apperror.ErrInvalidRequestInput)
@@ -82,7 +88,7 @@ func (h logHandler) CreateBulkLogs(c *gin.Context) {
 		logs = append(logs, e)
 	}
 
-	logsCreated, err := h.CreateUC.ExecuteBulk(c.Request.Context(), logs)
+	logsCreated, err := h.CreateUC.ExecuteBulk(c.Request.Context(), tenantId, userId, logs)
 	if err != nil {
 		SendError(c, err.Error(), apperror.ErrInternalServer)
 		return

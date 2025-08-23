@@ -8,6 +8,8 @@ down:
 
 server:
 	go run cmd/audit-logging-api/main.go
+worker:
+	go run cmd/async-task/main.go
 
 migrate:
 	docker-compose -f docker-compose-db-tools.yml run --rm flyway migrate

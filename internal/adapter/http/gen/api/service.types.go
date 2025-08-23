@@ -219,6 +219,11 @@ type GetLogsStatParams struct {
 	EndDate   *time.Time `form:"endDate,omitempty" json:"endDate,omitempty"`
 }
 
+// StreamLogsParams defines parameters for StreamLogs.
+type StreamLogsParams struct {
+	TenantId *string `form:"tenant_id,omitempty" json:"tenant_id,omitempty"`
+}
+
 // GenerateTokenJSONRequestBody defines body for GenerateToken for application/json ContentType.
 type GenerateTokenJSONRequestBody = GenerateTokenRequestBody
 
