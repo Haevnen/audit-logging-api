@@ -35,6 +35,12 @@ const (
 	WARNING  Severity = "WARNING"
 )
 
+// Defines values for ExportLogsParamsFormat.
+const (
+	Csv  ExportLogsParamsFormat = "csv"
+	Json ExportLogsParamsFormat = "json"
+)
+
 // Action defines model for Action.
 type Action string
 
@@ -45,7 +51,7 @@ type CreateLogRequestBody struct {
 	BeforeState    *map[string]interface{} `json:"before_state,omitempty"`
 	EventTimestamp time.Time               `json:"event_timestamp"`
 	IpAddress      *string                 `json:"ip_address,omitempty"`
-	Message        *string                 `json:"message,omitempty"`
+	Message        string                  `json:"message"`
 	Metadata       *map[string]interface{} `json:"metadata,omitempty"`
 	Resource       *string                 `json:"resource,omitempty"`
 	ResourceId     *string                 `json:"resource_id,omitempty"`
@@ -110,7 +116,7 @@ type GetSingleLogResponse struct {
 	// Id UUID
 	Id         string                  `json:"id"`
 	IpAddress  *string                 `json:"ip_address,omitempty"`
-	Message    *string                 `json:"message,omitempty"`
+	Message    string                  `json:"message"`
 	Metadata   *map[string]interface{} `json:"metadata,omitempty"`
 	Resource   *string                 `json:"resource,omitempty"`
 	ResourceId *string                 `json:"resource_id,omitempty"`
@@ -196,8 +202,8 @@ type SearchLogsParams struct {
 
 	// Severity Filter by severity
 	Severity  *Severity  `form:"severity,omitempty" json:"severity,omitempty"`
-	StartTime *time.Time `form:"startTime,omitempty" json:"startTime,omitempty"`
-	EndTime   *time.Time `form:"endTime,omitempty" json:"endTime,omitempty"`
+	StartTime *time.Time `form:"start_time,omitempty" json:"start_time,omitempty"`
+	EndTime   *time.Time `form:"end_time,omitempty" json:"end_time,omitempty"`
 
 	// Q Full-text search across message + metadata
 	Q          *string `form:"q,omitempty" json:"q,omitempty"`
@@ -210,8 +216,32 @@ type CreateBulkLogsJSONBody = []CreateLogRequestBody
 
 // CleanupLogsParams defines parameters for CleanupLogs.
 type CleanupLogsParams struct {
-	BeforeDate time.Time `form:"beforeDate" json:"beforeDate"`
+	BeforeDate time.Time `form:"before_date" json:"before_date"`
 }
+
+// ExportLogsParams defines parameters for ExportLogs.
+type ExportLogsParams struct {
+	// TenantId Filter by tenant
+	TenantId *string `form:"tenant_id,omitempty" json:"tenant_id,omitempty"`
+	UserId   *string `form:"user_id,omitempty" json:"user_id,omitempty"`
+
+	// Action Filter by action type
+	Action *Action `form:"action,omitempty" json:"action,omitempty"`
+
+	// Severity Filter by severity
+	Severity  *Severity  `form:"severity,omitempty" json:"severity,omitempty"`
+	StartTime *time.Time `form:"start_time,omitempty" json:"start_time,omitempty"`
+	EndTime   *time.Time `form:"end_time,omitempty" json:"end_time,omitempty"`
+
+	// Q Full-text search
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Format Export format
+	Format ExportLogsParamsFormat `form:"format" json:"format"`
+}
+
+// ExportLogsParamsFormat defines parameters for ExportLogs.
+type ExportLogsParamsFormat string
 
 // GetLogsStatParams defines parameters for GetLogsStat.
 type GetLogsStatParams struct {

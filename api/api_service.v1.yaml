@@ -113,7 +113,7 @@ components:
         - tenant_id
     CreateLogRequestBody:
       type: object
-      required: [tenant_id, user_id, action, severity, event_timestamp]
+      required: [tenant_id, user_id, action, severity, event_timestamp, message]
       properties:
         tenant_id:
           type: string
@@ -205,7 +205,7 @@ components:
         event_timestamp:
           type: string
           description: Timestamp
-      required: [id, tenant_id, user_id, action, severity, event_timestamp]
+      required: [id, tenant_id, user_id, action, severity, event_timestamp, message]
     LogStat:
       type: object
       properties:
@@ -381,10 +381,10 @@ paths:
           $ref: '#/components/schemas/Severity'
         description: Filter by severity
       - in: query
-        name: startTime
+        name: start_time
         schema: { type: string, format: date-time }
       - in: query
-        name: endTime
+        name: end_time
         schema: { type: string, format: date-time }
       - in: query
         name: q
@@ -549,7 +549,7 @@ paths:
       - BearerAuth: []
       parameters:
       - in: query
-        name: beforeDate
+        name: before_date
         required: true
         schema:
           type: string
@@ -627,5 +627,75 @@ paths:
           description: WebSocket upgrade successful
         "400":
           description: Invalid request
+  /logs/export:
+    get:
+      summary: Export logs
+      operationId: ExportLogs
+      description: Export logs in JSON or CSV format
+      tags:
+        - Logs
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: tenant_id
+          schema: { type: string }
+          description: Filter by tenant
+        - in: query
+          name: user_id
+          schema: { type: string }
+        - in: query
+          name: action
+          schema:
+            $ref: '#/components/schemas/Action'
+          description: Filter by action type
+        - in: query
+          name: severity
+          schema:
+            $ref: '#/components/schemas/Severity'
+          description: Filter by severity
+        - in: query
+          name: start_time
+          schema: { type: string, format: date-time }
+        - in: query
+          name: end_time
+          schema: { type: string, format: date-time }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Full-text search
+        - in: query
+          name: format
+          required: true
+          schema:
+            type: string
+            enum: [json, csv]
+          description: Export format
+      responses:
+        '200':
+          description: Logs export file
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetSingleLogResponse'
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+
 
 

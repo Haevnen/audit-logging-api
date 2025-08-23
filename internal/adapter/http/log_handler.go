@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"encoding/csv"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -183,8 +186,8 @@ func (h logHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsPara
 		Action:    utils.Ptr(c.Query("action")),
 		Resource:  utils.Ptr(c.Query("resource")),
 		Severity:  utils.Ptr(c.Query("severity")),
-		StartDate: utils.Ptr(c.Query("startTime")),
-		EndDate:   utils.Ptr(c.Query("endTime")),
+		StartDate: utils.Ptr(c.Query("start_time")),
+		EndDate:   utils.Ptr(c.Query("end_time")),
 		Query:     utils.Ptr(c.Query("q")),
 		Page:      pageNumber,
 		PageSize:  pageSize,
@@ -214,6 +217,82 @@ func (h logHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsPara
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+// (GET /api/v1/logs/export)
+func (h logHandler) ExportLogs(c *gin.Context, params api_service.ExportLogsParams) {
+	ctx := c.Request.Context()
+
+	tenantId := getClaimTenant(c)
+
+	filters := repository.LogSearchFilters{
+		TenantID:  utils.Ptr(tenantId),
+		UserID:    utils.Ptr(c.Query("user_id")),
+		Action:    utils.Ptr(c.Query("action")),
+		Resource:  utils.Ptr(c.Query("resource")),
+		Severity:  utils.Ptr(c.Query("severity")),
+		StartDate: utils.Ptr(c.Query("start_time")),
+		EndDate:   utils.Ptr(c.Query("end_time")),
+		Query:     utils.Ptr(c.Query("q")),
+	}
+
+	format := params.Format
+
+	// prepare HTTP headers
+	filename := fmt.Sprintf("logs.%s", format)
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+
+	switch format {
+	case "json":
+		c.Header("Content-Type", "application/json")
+		c.Writer.Write([]byte("[")) // start JSON array
+
+		first := true
+		err := h.SearchLogUC.Stream(ctx, filters, func(l entity_log.Log) error {
+			data, _ := json.Marshal(l)
+			if !first {
+				c.Writer.Write([]byte(","))
+			}
+			c.Writer.Write(data)
+			first = false
+			c.Writer.Flush()
+			return nil
+		})
+		if err != nil {
+			SendError(c, err.Error(), apperror.ErrInternalServer)
+			return
+		}
+
+		c.Writer.Write([]byte("]")) // close JSON array
+
+	case "csv":
+		c.Header("Content-Type", "text/csv")
+		w := csv.NewWriter(c.Writer)
+
+		// header row
+		_ = w.Write([]string{"id", "tenant_id", "user_id", "action", "severity", "event_timestamp", "message"})
+
+		err := h.SearchLogUC.Stream(ctx, filters, func(l entity_log.Log) error {
+			return w.Write([]string{
+				l.ID,
+				l.TenantID,
+				l.UserID,
+				string(l.Action),
+				string(l.Severity),
+				l.EventTimestamp.Format(time.RFC3339),
+				l.Message,
+			})
+		})
+		w.Flush()
+
+		if err != nil {
+			SendError(c, err.Error(), apperror.ErrInternalServer)
+			return
+		}
+
+	default:
+		SendError(c, "bad request", apperror.ErrInvalidRequestInput)
+	}
 }
 
 func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequestBody) (entity_log.Log, string, error) {

@@ -156,7 +156,7 @@ paths:
         style: form
       - explode: true
         in: query
-        name: startTime
+        name: start_time
         required: false
         schema:
           format: date-time
@@ -164,7 +164,7 @@ paths:
         style: form
       - explode: true
         in: query
-        name: endTime
+        name: end_time
         required: false
         schema:
           format: date-time
@@ -336,7 +336,7 @@ paths:
       parameters:
       - explode: true
         in: query
-        name: beforeDate
+        name: before_date
         required: true
         schema:
           format: date-time
@@ -428,6 +428,107 @@ paths:
         "400":
           description: Invalid request
       summary: Stream logs in real time
+      tags:
+      - Logs
+  /logs/export:
+    get:
+      description: Export logs in JSON or CSV format
+      operationId: ExportLogs
+      parameters:
+      - description: Filter by tenant
+        explode: true
+        in: query
+        name: tenant_id
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter by action type
+        explode: true
+        in: query
+        name: action
+        required: false
+        schema:
+          $ref: '#/components/schemas/Action'
+        style: form
+      - description: Filter by severity
+        explode: true
+        in: query
+        name: severity
+        required: false
+        schema:
+          $ref: '#/components/schemas/Severity'
+        style: form
+      - explode: true
+        in: query
+        name: start_time
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: end_time
+        required: false
+        schema:
+          format: date-time
+          type: string
+        style: form
+      - description: Full-text search
+        explode: true
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Export format
+        explode: true
+        in: query
+        name: format
+        required: true
+        schema:
+          enum:
+          - json
+          - csv
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GetSingleLogResponse'
+                type: array
+            text/csv:
+              schema:
+                format: binary
+                type: string
+          description: Logs export file
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Access Forbidden
+      security:
+      - BearerAuth: []
+      summary: Export logs
       tags:
       - Logs
 components:
@@ -588,6 +689,7 @@ components:
       required:
       - action
       - event_timestamp
+      - message
       - severity
       - tenant_id
       - user_id
@@ -680,6 +782,7 @@ components:
       - action
       - event_timestamp
       - id
+      - message
       - severity
       - tenant_id
       - user_id

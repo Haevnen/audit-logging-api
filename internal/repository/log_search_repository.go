@@ -31,6 +31,7 @@ type SearchResult struct {
 
 type LogSearchRepository interface {
 	Search(ctx context.Context, filters LogSearchFilters) (*SearchResult, error)
+	Stream(ctx context.Context, filters LogSearchFilters, fn func(log.Log) error) error
 }
 
 type openSearchRepo struct {
@@ -56,8 +57,106 @@ func (r *openSearchRepo) Search(ctx context.Context, filters LogSearchFilters) (
 	}
 
 	// Build ES query
+	query := buildQuery(filters, &from)
+	payload, _ := json.Marshal(query)
+	logger.GetLogger().Info(string(payload))
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		var errBody bytes.Buffer
+		_, _ = errBody.ReadFrom(resp.Body)
+		return nil, fmt.Errorf("opensearch error: %s - %s", resp.Status, errBody.String())
+	}
+
+	var res struct {
+		Hits struct {
+			Total struct {
+				Value int64 `json:"value"`
+			} `json:"total"`
+			Hits []struct {
+				Source log.Log `json:"_source"`
+			} `json:"hits"`
+		} `json:"hits"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return nil, err
+	}
+
+	results := make([]log.Log, len(res.Hits.Hits))
+	for i, h := range res.Hits.Hits {
+		results[i] = h.Source
+	}
+
+	return &SearchResult{
+		Total: res.Hits.Total.Value,
+		Logs:  results,
+	}, nil
+}
+
+func (r *openSearchRepo) Stream(ctx context.Context, filters LogSearchFilters, fn func(log.Log) error) error {
+	size := 1000
+	searchAfter := []interface{}{}
+	logger := logger.GetLogger()
+
+	for {
+		query := buildQuery(filters, nil) // reuse your search filters
+		query["size"] = size
+		if len(searchAfter) > 0 {
+			query["search_after"] = searchAfter
+		}
+
+		payload, _ := json.Marshal(query)
+		logger.Info(string(payload))
+		req, _ := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/%s/_search", r.baseURL, r.indexName), bytes.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := r.client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		var res struct {
+			Hits struct {
+				Hits []struct {
+					Sort   []interface{} `json:"sort"`
+					Source log.Log       `json:"_source"`
+				} `json:"hits"`
+			} `json:"hits"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+			return err
+		}
+
+		if len(res.Hits.Hits) == 0 {
+			break
+		}
+
+		for _, h := range res.Hits.Hits {
+			if err := fn(h.Source); err != nil {
+				return err
+			}
+			searchAfter = h.Sort
+		}
+	}
+
+	return nil
+}
+
+func buildQuery(filters LogSearchFilters, from *int) map[string]interface{} {
 	query := map[string]interface{}{
-		"from": from,
 		"size": filters.PageSize,
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -67,8 +166,13 @@ func (r *openSearchRepo) Search(ctx context.Context, filters LogSearchFilters) (
 		},
 	}
 
+	if from != nil {
+		query["from"] = *from
+	}
+
 	query["sort"] = []map[string]interface{}{
-		{"EventTimestamp": map[string]string{"order": "desc"}},
+		{"EventTimestamp": map[string]string{"order": "asc"}},
+		{"ID.keyword": map[string]string{"order": "asc"}}, // tie-breaker
 	}
 
 	boolQuery := query["query"].(map[string]interface{})["bool"].(map[string]interface{})
@@ -132,49 +236,5 @@ func (r *openSearchRepo) Search(ctx context.Context, filters LogSearchFilters) (
 		)
 	}
 
-	payload, _ := json.Marshal(query)
-	logger.GetLogger().Info(string(payload))
-
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(payload))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := r.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 300 {
-		var errBody bytes.Buffer
-		_, _ = errBody.ReadFrom(resp.Body)
-		return nil, fmt.Errorf("opensearch error: %s - %s", resp.Status, errBody.String())
-	}
-
-	var res struct {
-		Hits struct {
-			Total struct {
-				Value int64 `json:"value"`
-			} `json:"total"`
-			Hits []struct {
-				Source log.Log `json:"_source"`
-			} `json:"hits"`
-		} `json:"hits"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return nil, err
-	}
-
-	results := make([]log.Log, len(res.Hits.Hits))
-	for i, h := range res.Hits.Hits {
-		results[i] = h.Source
-	}
-
-	return &SearchResult{
-		Total: res.Hits.Total.Value,
-		Logs:  results,
-	}, nil
+	return query
 }
