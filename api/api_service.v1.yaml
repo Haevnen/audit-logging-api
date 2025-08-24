@@ -356,7 +356,7 @@ paths:
     get:
       summary: Advanced search logs
       operationId: SearchLogs
-      description: Search logs
+      description: Search logs (admin/user/auditor - tenant scoped)
       tags:
       - Logs
       security:
@@ -430,7 +430,7 @@ paths:
           description: Access Forbidden
     post:
       operationId: CreateLog
-      description: Create a new log
+      description: Create a new log (admin/user - tenant scoped)
       summary: Create a new log
       tags: 
       - Logs
@@ -464,7 +464,7 @@ paths:
   /logs/bulk:
     post:
       operationId: CreateBulkLogs
-      description: Create bulk logs
+      description: Create bulk logs (admin/user - tenant scoped)
       summary: Create bulk logs
       tags: 
       - Logs
@@ -501,7 +501,7 @@ paths:
   /logs/{id}:
     get:
       operationId: GetLog
-      description: Get a log by id
+      description: Get a log by id (admin/user/auditor - tenant scoped)
       summary: Get a log by id
       tags: 
       - Logs
@@ -541,8 +541,8 @@ paths:
   /logs/cleanup:
     delete:
       operationId: CleanupLogs
-      description: Cleanup logs
-      summary: Cleanup logs
+      description: Cleanup logs (admin only)
+      summary: Cleanup log
       tags: 
       - Logs
       security:
@@ -572,7 +572,7 @@ paths:
   /logs/stats:
     get:
       operationId: GetLogsStat
-      description: Return aggregated log statistics for actions and severity (refresh every 5 mins)
+      description: Return aggregated log statistics for actions and severity (refresh every 5 mins) - (admin/user/auditor - tenant scoped)
       summary: Get logs stat
       tags: 
       - Logs
@@ -614,7 +614,7 @@ paths:
   /logs/stream:
     get:
       summary: Stream logs in real time
-      description: Establishes a WebSocket connection to stream logs in real time.
+      description: Establishes a WebSocket connection to stream logs in real time (admin/user/auditor - tenant scoped)
       operationId: StreamLogs
       tags:
         - Logs
@@ -631,7 +631,7 @@ paths:
     get:
       summary: Export logs
       operationId: ExportLogs
-      description: Export logs in JSON or CSV format
+      description: Export logs in JSON or CSV format (admin/auditor - tenant scoped)
       tags:
         - Logs
       security:
