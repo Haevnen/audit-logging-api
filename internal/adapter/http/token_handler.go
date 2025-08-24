@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/apperror"
 	"github.com/Haevnen/audit-logging-api/internal/auth"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
-	"github.com/gin-gonic/gin"
 )
 
 type TokenHandler struct {

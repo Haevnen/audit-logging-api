@@ -11,9 +11,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 )
 
 type S3Publisher interface {

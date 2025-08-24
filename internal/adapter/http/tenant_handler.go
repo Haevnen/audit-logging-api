@@ -3,11 +3,12 @@ package handler
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/apperror"
 	"github.com/Haevnen/audit-logging-api/internal/registry"
 	"github.com/Haevnen/audit-logging-api/internal/usecase/tenant"
-	"github.com/gin-gonic/gin"
 )
 
 type TenantHandler struct {

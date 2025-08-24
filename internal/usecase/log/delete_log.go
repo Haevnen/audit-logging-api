@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/Haevnen/audit-logging-api/internal/entity/async_task"
 	"github.com/Haevnen/audit-logging-api/internal/interactor"
 	"github.com/Haevnen/audit-logging-api/internal/repository"
 	"github.com/Haevnen/audit-logging-api/internal/service"
-	"github.com/google/uuid"
 )
 
 type DeleteLogUseCase struct {

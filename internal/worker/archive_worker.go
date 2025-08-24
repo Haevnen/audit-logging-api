@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/Haevnen/audit-logging-api/internal/entity/async_task"
 	"github.com/Haevnen/audit-logging-api/internal/interactor"
 	"github.com/Haevnen/audit-logging-api/internal/repository"
 	"github.com/Haevnen/audit-logging-api/internal/service"
 	"github.com/Haevnen/audit-logging-api/pkg/logger"
 	"github.com/Haevnen/audit-logging-api/pkg/utils"
-	"github.com/google/uuid"
 )
 
 type ArchiveWorker struct {

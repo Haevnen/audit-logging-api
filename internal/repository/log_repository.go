@@ -6,8 +6,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"gorm.io/gorm"
+
+	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 )
 
 const (

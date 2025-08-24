@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
 	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
 	"github.com/Haevnen/audit-logging-api/internal/apperror"
 	"github.com/Haevnen/audit-logging-api/internal/auth"
@@ -17,8 +20,6 @@ import (
 	"github.com/Haevnen/audit-logging-api/internal/repository"
 	"github.com/Haevnen/audit-logging-api/internal/usecase/log"
 	"github.com/Haevnen/audit-logging-api/pkg/utils"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type LogHandler struct {

@@ -3,9 +3,10 @@ package tenant
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/Haevnen/audit-logging-api/internal/entity/tenant"
 	"github.com/Haevnen/audit-logging-api/internal/repository"
-	"github.com/google/uuid"
 )
 
 type CreateTenantUseCase struct {

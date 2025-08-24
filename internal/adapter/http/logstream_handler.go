@@ -3,12 +3,13 @@ package handler
 import (
 	"net/http"
 
-	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
-	"github.com/Haevnen/audit-logging-api/internal/registry"
-	"github.com/Haevnen/audit-logging-api/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
+
+	api_service "github.com/Haevnen/audit-logging-api/internal/adapter/http/gen/api"
+	"github.com/Haevnen/audit-logging-api/internal/registry"
+	"github.com/Haevnen/audit-logging-api/internal/service"
 )
 
 type LogStreamHandler struct {

@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+
+	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 )
 
 type SQSPublisher interface {

@@ -5,8 +5,9 @@ package repository
 import (
 	"context"
 
-	"github.com/Haevnen/audit-logging-api/internal/entity/async_task"
 	"gorm.io/gorm"
+
+	"github.com/Haevnen/audit-logging-api/internal/entity/async_task"
 )
 
 type AsyncTaskRepository interface {

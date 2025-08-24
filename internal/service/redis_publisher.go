@@ -7,8 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/Haevnen/audit-logging-api/internal/entity/log"
 )
 
 type PubSub interface {

@@ -3,9 +3,10 @@ package config
 import (
 	"fmt"
 
-	"github.com/Haevnen/audit-logging-api/pkg/gormdb"
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
+
+	"github.com/Haevnen/audit-logging-api/pkg/gormdb"
 )
 
 type Config struct {

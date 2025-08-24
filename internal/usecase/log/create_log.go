@@ -3,12 +3,13 @@ package log
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/Haevnen/audit-logging-api/internal/entity/async_task"
 	entitylog "github.com/Haevnen/audit-logging-api/internal/entity/log"
 	"github.com/Haevnen/audit-logging-api/internal/interactor"
 	"github.com/Haevnen/audit-logging-api/internal/repository"
 	"github.com/Haevnen/audit-logging-api/internal/service"
-	"github.com/google/uuid"
 )
 
 type CreateLogUseCase struct {
