@@ -22,7 +22,7 @@
   - Real-time WebSocket streaming  
 
 - **Tenant Management**  
-  - Strict tenant isolation  
+  - Strict tenant isolation (add tenant_id to query)
   - Admin-only tenant creation & listing  
 
 - **Data Management**  
@@ -126,7 +126,7 @@ make worker # using another terminal
 ```
 ---
 
-## 6 Testing
+## 6. Testing
 - Please refer [testing guideline](docs/Testing_guideline.md) before calling any API
 - Unittest: 54%
 ```bash
@@ -147,10 +147,9 @@ total:                                                                          
 - Integration test: API endpoint tested with [Postman
   collection](docs/Audit%20Logging%20API.postman_collection.json)
 
-## 7 Documentation
+## 7. Documentation
 - [Testing guideline](docs/Testing_guideline.md)
 - [System Architecture](docs/System_architecture.md)
-- [Design decision](docs/Design_decision.md)
 - [Database design](docs/Database_design.md)
 - [OpenAPI 3.0 spec](http://localhost:8080/)
 - [Postman collection](docs/Audit%20Logging%20API.postman_collection.json)
