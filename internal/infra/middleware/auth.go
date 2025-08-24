@@ -29,7 +29,7 @@ var roleMap = map[string][]auth.Role{
 	"POST:/tenants":        {auth.RoleAdmin},
 }
 
-func RequireAuth(jwtManager *auth.Manager) api_service.MiddlewareFunc {
+func RequireAuth(jwtManager auth.ManagerInterface) api_service.MiddlewareFunc {
 	return func(c *gin.Context) {
 		key := c.Request.Method + ":" + strings.TrimPrefix(c.FullPath(), constant.BaseURL)
 		if key == exceptionAPI {

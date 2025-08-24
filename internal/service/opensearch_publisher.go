@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source=opensearch_publisher.go -destination=./mocks/mock_opensearch_publisher.go -package=mocks
+
 import (
 	"bytes"
 	"context"

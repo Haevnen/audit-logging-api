@@ -14,12 +14,12 @@ import (
 type CreateLogUseCase struct {
 	Repo           repository.LogRepository
 	AsyncTaskRepo  repository.AsyncTaskRepository
-	TxManager      *interactor.TxManager
+	TxManager      interactor.TxManager
 	QueuePublisher service.SQSPublisher
 	PubSub         service.PubSub
 }
 
-func NewCreateLogUseCase(repo repository.LogRepository, txManager *interactor.TxManager, queuePublisher service.SQSPublisher, pubSub service.PubSub, asyncTaskRepo repository.AsyncTaskRepository) *CreateLogUseCase {
+func NewCreateLogUseCase(repo repository.LogRepository, txManager interactor.TxManager, queuePublisher service.SQSPublisher, pubSub service.PubSub, asyncTaskRepo repository.AsyncTaskRepository) *CreateLogUseCase {
 	return &CreateLogUseCase{Repo: repo, TxManager: txManager, QueuePublisher: queuePublisher, PubSub: pubSub, AsyncTaskRepo: asyncTaskRepo}
 }
 

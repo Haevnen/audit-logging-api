@@ -21,16 +21,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type logHandler struct {
-	CreateUC    *log.CreateLogUseCase
-	GetUC       *log.GetLogUseCase
-	DeleteUC    *log.DeleteLogUseCase
-	StatsUC     *log.GetStatsUseCase
-	SearchLogUC *log.SearchLogsUseCase
+type LogHandler struct {
+	CreateUC    log.CreateLogUseCaseInterface
+	GetUC       log.GetLogUseCaseInterface
+	DeleteUC    log.DeleteLogUseCaseInterface
+	StatsUC     log.GetStatsUseCaseInterface
+	SearchLogUC log.SearchLogsUseCaseInterface
 }
 
-func newLogHandler(r *registry.Registry) logHandler {
-	return logHandler{
+func newLogHandler(r *registry.Registry) LogHandler {
+	return LogHandler{
 		CreateUC:    r.CreateLogUseCase(),
 		GetUC:       r.GetLogUseCase(),
 		DeleteUC:    r.DeleteLogUseCase(),
@@ -40,12 +40,12 @@ func newLogHandler(r *registry.Registry) logHandler {
 }
 
 // (POST /logs)
-func (h logHandler) CreateLog(g *gin.Context) {
+func (h LogHandler) CreateLog(g *gin.Context) {
 	userId := g.GetString(constant.UserID)
 	tenantId := getClaimTenant(g)
 
 	var body api_service.CreateLogRequestBody
-	if err := bindRequestBody(g, &body); err != nil {
+	if err := BindRequestBody(g, &body); err != nil {
 		SendError(g, err.Error(), apperror.ErrInvalidRequestInput)
 		return
 	}
@@ -70,12 +70,12 @@ func (h logHandler) CreateLog(g *gin.Context) {
 }
 
 // (POST /logs/bulk)
-func (h logHandler) CreateBulkLogs(c *gin.Context) {
+func (h LogHandler) CreateBulkLogs(c *gin.Context) {
 	tenantId := getClaimTenant(c)
 	userId := c.GetString(constant.UserID)
 
 	var body []api_service.CreateLogRequestBody
-	if err := bindRequestBody(c, &body); err != nil {
+	if err := BindRequestBody(c, &body); err != nil {
 		SendError(c, err.Error(), apperror.ErrInvalidRequestInput)
 		return
 	}
@@ -108,7 +108,7 @@ func (h logHandler) CreateBulkLogs(c *gin.Context) {
 }
 
 // (GET /logs/{id})
-func (h logHandler) GetLog(c *gin.Context, id string) {
+func (h LogHandler) GetLog(c *gin.Context, id string) {
 	if len(id) == 0 {
 		SendError(c, "id is required", apperror.ErrInvalidRequestInput)
 		return
@@ -125,7 +125,7 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 		return
 	}
 
-	resp, err := toSingleLogResponse(*log)
+	resp, err := ToSingleLogResponse(*log)
 	if err != nil {
 		SendError(c, err.Error(), apperror.ErrInternalServer)
 	}
@@ -133,7 +133,7 @@ func (h logHandler) GetLog(c *gin.Context, id string) {
 }
 
 // (DELETE /logs/cleanup)
-func (h logHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsParams) {
+func (h LogHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsParams) {
 	tenantId := getClaimTenant(c)
 	userId := c.GetString(constant.UserID)
 
@@ -146,7 +146,7 @@ func (h logHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsPa
 }
 
 // (GET /logs/stat)
-func (h logHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatParams) {
+func (h LogHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatParams) {
 	tenantId := getClaimTenant(c)
 
 	endDate := time.Now().UTC()
@@ -165,11 +165,11 @@ func (h logHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatPa
 		return
 	}
 
-	c.JSON(http.StatusOK, toLogStatsResponse(stats))
+	c.JSON(http.StatusOK, ToLogStatsResponse(stats))
 }
 
 // (GET /api/v1/logs/search)
-func (h logHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsParams) {
+func (h LogHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsParams) {
 	pageNumber, pageSize := 1, constant.MaxPageSize
 	if params.PageNumber != nil && *params.PageNumber > 0 {
 		pageNumber = *params.PageNumber
@@ -201,7 +201,7 @@ func (h logHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsPara
 
 	logConverted := make([]api_service.GetSingleLogResponse, 0, len(result.Logs))
 	for _, l := range result.Logs {
-		r, err := toSingleLogResponse(l)
+		r, err := ToSingleLogResponse(l)
 		if err != nil {
 			SendError(c, err.Error(), apperror.ErrInternalServer)
 			return
@@ -220,7 +220,7 @@ func (h logHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsPara
 }
 
 // (GET /api/v1/logs/export)
-func (h logHandler) ExportLogs(c *gin.Context, params api_service.ExportLogsParams) {
+func (h LogHandler) ExportLogs(c *gin.Context, params api_service.ExportLogsParams) {
 	ctx := c.Request.Context()
 
 	tenantId := getClaimTenant(c)
@@ -307,12 +307,12 @@ func validateAndGenerateLogEntity(g *gin.Context, body api_service.CreateLogRequ
 		return entity_log.Log{}, "user id is required", apperror.ErrInvalidRequestInput
 	}
 
-	actionType := toEntityAction(body.Action)
+	actionType := ToEntityAction(body.Action)
 	if actionType == "" {
 		return entity_log.Log{}, "invalid action type", apperror.ErrInvalidRequestInput
 	}
 
-	severity := toEntitySeverity(body.Severity)
+	severity := ToEntitySeverity(body.Severity)
 	if severity == "" {
 		return entity_log.Log{}, "invalid severity", apperror.ErrInvalidRequestInput
 	}

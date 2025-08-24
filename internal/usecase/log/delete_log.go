@@ -14,10 +14,10 @@ import (
 type DeleteLogUseCase struct {
 	AsyncTaskRepo  repository.AsyncTaskRepository
 	QueuePublisher service.SQSPublisher
-	TxManager      *interactor.TxManager
+	TxManager      interactor.TxManager
 }
 
-func NewDeleteLogUseCase(asyncTaskRepo repository.AsyncTaskRepository, queuePublisher service.SQSPublisher, txManager *interactor.TxManager) *DeleteLogUseCase {
+func NewDeleteLogUseCase(asyncTaskRepo repository.AsyncTaskRepository, queuePublisher service.SQSPublisher, txManager interactor.TxManager) *DeleteLogUseCase {
 	return &DeleteLogUseCase{
 		AsyncTaskRepo:  asyncTaskRepo,
 		QueuePublisher: queuePublisher,

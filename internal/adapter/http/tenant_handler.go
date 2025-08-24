@@ -10,20 +10,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type tenantHandler struct {
-	CreateUC *tenant.CreateTenantUseCase
-	ListUC   *tenant.ListTenantsUseCase
+type TenantHandler struct {
+	CreateUC tenant.CreateTenantUseCaseInterface
+	ListUC   tenant.ListTenantsUseCaseInterface
 }
 
-func newTenantHandler(r *registry.Registry) tenantHandler {
-	return tenantHandler{
+func newTenantHandler(r *registry.Registry) TenantHandler {
+	return TenantHandler{
 		CreateUC: r.CreateTenantUseCase(),
 		ListUC:   r.ListTenantsUseCase(),
 	}
 }
 
 // (GET /tenants)
-func (h tenantHandler) ListTenants(g *gin.Context) {
+func (h TenantHandler) ListTenants(g *gin.Context) {
 	tenants, err := h.ListUC.Execute(g.Request.Context())
 	if err != nil {
 		SendError(g, err.Error(), apperror.ErrInternalServer)
@@ -43,9 +43,9 @@ func (h tenantHandler) ListTenants(g *gin.Context) {
 }
 
 // (POST /tenants)
-func (h tenantHandler) CreateTenant(g *gin.Context) {
+func (h TenantHandler) CreateTenant(g *gin.Context) {
 	var body api_service.CreateTenantRequestBody
-	if err := bindRequestBody(g, &body); err != nil {
+	if err := BindRequestBody(g, &body); err != nil {
 		SendError(g, err.Error(), apperror.ErrInvalidRequestInput)
 		return
 	}

@@ -11,12 +11,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type logStreamHandler struct {
-	pubsub service.PubSub
+type LogStreamHandler struct {
+	Pubsub service.PubSub
 }
 
-func newLogStreamHandler(r *registry.Registry) logStreamHandler {
-	return logStreamHandler{pubsub: r.PubSub()}
+func newLogStreamHandler(r *registry.Registry) LogStreamHandler {
+	return LogStreamHandler{Pubsub: r.PubSub()}
 }
 
 var upgrader = websocket.Upgrader{
@@ -24,7 +24,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // StreamLogs implements GET /api/v1/logs/stream
-func (h logStreamHandler) StreamLogs(c *gin.Context, params api_service.StreamLogsParams) {
+func (h LogStreamHandler) StreamLogs(c *gin.Context, params api_service.StreamLogsParams) {
 	// 1. Determine channel
 	ctx := c.Request.Context()
 	tenantId := getClaimTenant(c)
@@ -41,7 +41,7 @@ func (h logStreamHandler) StreamLogs(c *gin.Context, params api_service.StreamLo
 	}
 	defer conn.Close()
 
-	sub := h.pubsub.Subscribe(ctx, channel)
+	sub := h.Pubsub.Subscribe(ctx, channel)
 	defer sub.Close()
 
 	ch := sub.Channel(redis.WithChannelSize(100))

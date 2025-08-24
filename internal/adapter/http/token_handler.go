@@ -11,20 +11,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type tokenHandler struct {
-	jwtManager *auth.Manager
+type TokenHandler struct {
+	JwtManager auth.ManagerInterface
 }
 
-func newTokenHandler(registry *registry.Registry) tokenHandler {
-	return tokenHandler{
-		jwtManager: registry.Manager(),
+func newTokenHandler(registry *registry.Registry) TokenHandler {
+	return TokenHandler{
+		JwtManager: registry.Manager(),
 	}
 }
 
 // GenerateToken (POST /auth/token)
-func (t tokenHandler) GenerateToken(c *gin.Context) {
+func (t TokenHandler) GenerateToken(c *gin.Context) {
 	var genTokenReqBody api_service.GenerateTokenRequestBody
-	if bindRequestBody(c, &genTokenReqBody) != nil {
+	if BindRequestBody(c, &genTokenReqBody) != nil {
 		SendError(c, "invalid request body", apperror.ErrInvalidRequestInput)
 		return
 	}
@@ -35,7 +35,7 @@ func (t tokenHandler) GenerateToken(c *gin.Context) {
 		return
 	}
 
-	token, err := t.jwtManager.GenerateToken(genTokenReqBody.UserId, genTokenReqBody.TenantId, role, 1*time.Hour)
+	token, err := t.JwtManager.GenerateToken(genTokenReqBody.UserId, genTokenReqBody.TenantId, role, 1*time.Hour)
 	if err != nil {
 		SendError(c, "failed to generate token", apperror.ErrInternalServer)
 		return

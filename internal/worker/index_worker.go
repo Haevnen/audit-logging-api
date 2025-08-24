@@ -15,7 +15,7 @@ import (
 
 type IndexWorker struct {
 	sqsClient  service.SQSPublisher
-	txManager  *interactor.TxManager
+	txManager  interactor.TxManager
 	taskRepo   repository.AsyncTaskRepository
 	openSearch service.OpenSearchPublisher
 	indexQueue string
@@ -23,7 +23,7 @@ type IndexWorker struct {
 
 func NewIndexWorker(
 	sqsClient service.SQSPublisher,
-	txManager *interactor.TxManager,
+	txManager interactor.TxManager,
 	taskRepo repository.AsyncTaskRepository,
 	openSearch service.OpenSearchPublisher,
 	indexQueue string,
@@ -53,7 +53,7 @@ func (w *IndexWorker) Start(ctx context.Context) {
 			}
 
 			for _, m := range msgs {
-				if err := w.handleMessage(ctx, m); err != nil {
+				if err := w.HandleMessage(ctx, m); err != nil {
 					logger.Warning("failed to handle index message", err)
 				}
 				// Always delete to avoid retries storm
@@ -63,7 +63,7 @@ func (w *IndexWorker) Start(ctx context.Context) {
 	}
 }
 
-func (w *IndexWorker) handleMessage(ctx context.Context, msg service.ReceiveMessage) error {
+func (w *IndexWorker) HandleMessage(ctx context.Context, msg service.ReceiveMessage) error {
 	log := logger.GetLogger()
 	taskId := msg.Message.ID
 	log.WithFields(map[string]interface{}{

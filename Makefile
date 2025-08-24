@@ -1,3 +1,4 @@
+.PHONY: run down server worker migrate codegen codegen-unify test list-pkgs
 include .env
 
 run:
@@ -32,3 +33,18 @@ codegen: codegen-unify
 		-generate "types" -package api_service /api/gen/specs/openapi/openapi.yaml > ./internal/adapter/http/gen/api/service.types.go
 	docker-compose -f docker-compose-tools.yml run --rm oapi-codegen\
 		-generate "gin-server,spec" -package api_service /api/gen/specs/openapi/openapi.yaml > ./internal/adapter/http/gen/api/service.server.go
+
+EXCLUDE_DIRS=mocks|gen|pkg|cmd|entity|registry|constant|apperror
+
+# List all packages, excluding mocks/gen/pkg
+PKGS=$(shell go list ./... | grep -Ev '($(EXCLUDE_DIRS))')
+
+test:
+	@echo ">>> Running tests with coverage (excluding $(EXCLUDE_DIRS))..."
+	@go test -race -covermode=atomic -coverprofile=coverage.out $(PKGS)
+	@echo ">>> Overall Coverage:"
+	@go tool cover -func=coverage.out | grep total:
+
+list-pkgs:
+	@echo ">>> Included packages (after exclusion):"
+	@echo $(PKGS) | tr ' ' '\n

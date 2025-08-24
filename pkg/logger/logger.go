@@ -16,6 +16,12 @@ var (
 func GetLogger() *log.Logger {
 	logMux.Lock()
 	defer logMux.Unlock()
+	if logger == nil {
+		logger = log.New()
+		logger.SetFormatter(&log.TextFormatter{})
+		logger.SetLevel(log.InfoLevel)
+		logger.SetOutput(os.Stderr)
+	}
 	return logger
 }
 

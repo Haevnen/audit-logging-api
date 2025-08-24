@@ -106,6 +106,6 @@ func (r *Registry) Manager() *auth.Manager {
 	return auth.NewManager(r.key)
 }
 
-func (r *Registry) TxManager() *interactor.TxManager {
+func (r *Registry) TxManager() interactor.TxManager {
 	return interactor.NewTxManager(r.db)
 }

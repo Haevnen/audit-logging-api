@@ -1,10 +1,17 @@
 package auth
 
+//go:generate mockgen -source=jwt.go -destination=mocks/jwt.go
+
 import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+type ManagerInterface interface {
+	GenerateToken(userID, tenantID string, role Role, ttl time.Duration) (string, error)
+	ParseToken(tokenStr string) (*Claims, error)
+}
 
 type Manager struct {
 	secretKey []byte

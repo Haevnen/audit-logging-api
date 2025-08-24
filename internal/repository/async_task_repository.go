@@ -1,5 +1,7 @@
 package repository
 
+//go:generate mockgen -source=async_task_repository.go -destination=./mocks/mock_async_task_repository.go -package=mocks
+
 import (
 	"context"
 

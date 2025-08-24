@@ -19,7 +19,7 @@ type ArchiveWorker struct {
 	taskRepo     repository.AsyncTaskRepository
 	logRepo      repository.LogRepository
 	s3Client     service.S3Publisher
-	txManager    *interactor.TxManager
+	txManager    interactor.TxManager
 	archiveQueue string
 }
 
@@ -28,7 +28,7 @@ func NewArchiveWorker(
 	taskRepo repository.AsyncTaskRepository,
 	logRepo repository.LogRepository,
 	s3Client service.S3Publisher,
-	txManager *interactor.TxManager,
+	txManager interactor.TxManager,
 	archiveQueue string,
 ) *ArchiveWorker {
 	return &ArchiveWorker{
@@ -58,7 +58,7 @@ func (w *ArchiveWorker) Start(ctx context.Context) {
 			}
 
 			for _, m := range msgs {
-				if err := w.handleMessage(ctx, m); err != nil {
+				if err := w.HandleMessage(ctx, m); err != nil {
 					logger.Warning("failed to handle message", err)
 				}
 				// Always delete to avoid retries storm
@@ -68,7 +68,7 @@ func (w *ArchiveWorker) Start(ctx context.Context) {
 	}
 }
 
-func (w *ArchiveWorker) handleMessage(ctx context.Context, msg service.ReceiveMessage) error {
+func (w *ArchiveWorker) HandleMessage(ctx context.Context, msg service.ReceiveMessage) error {
 	logger := logger.GetLogger()
 	taskId, beforeDate := msg.Message.ID, msg.Message.BeforeDate
 	logger.WithFields(map[string]interface{}{

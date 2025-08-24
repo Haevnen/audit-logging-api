@@ -17,7 +17,7 @@ type CleanUpWorker struct {
 	sqsClient    service.SQSPublisher
 	taskRepo     repository.AsyncTaskRepository
 	logRepo      repository.LogRepository
-	txManager    *interactor.TxManager
+	txManager    interactor.TxManager
 	openSearch   service.OpenSearchPublisher
 	cleanupQueue string
 }
@@ -26,7 +26,7 @@ func NewCleanUpWorker(
 	sqsClient service.SQSPublisher,
 	taskRepo repository.AsyncTaskRepository,
 	logRepo repository.LogRepository,
-	txManager *interactor.TxManager,
+	txManager interactor.TxManager,
 	openSearch service.OpenSearchPublisher,
 	cleanupQueue string,
 ) *CleanUpWorker {
@@ -56,7 +56,7 @@ func (w *CleanUpWorker) Start(ctx context.Context) {
 			}
 
 			for _, m := range msgs {
-				if err := w.handleMessage(ctx, m); err != nil {
+				if err := w.HandleMessage(ctx, m); err != nil {
 					logger.Warning("failed to handle cleanup message", err)
 				}
 				// Always delete to avoid retries storm
@@ -66,7 +66,7 @@ func (w *CleanUpWorker) Start(ctx context.Context) {
 	}
 }
 
-func (w *CleanUpWorker) handleMessage(ctx context.Context, msg service.ReceiveMessage) error {
+func (w *CleanUpWorker) HandleMessage(ctx context.Context, msg service.ReceiveMessage) error {
 	log := logger.GetLogger()
 	taskId, beforeDate := msg.Message.ID, msg.Message.BeforeDate
 	log.WithFields(map[string]interface{}{

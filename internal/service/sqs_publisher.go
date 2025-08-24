@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source=sqs_publisher.go -destination=./mocks/mock_sqs_publisher.go -package=mocks
+
 import (
 	"context"
 	"encoding/json"

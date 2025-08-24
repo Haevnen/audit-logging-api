@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source=s3_publisher.go -destination=./mocks/mock_s3_publisher.go -package=mocks
+
 import (
 	"bytes"
 	"compress/gzip"

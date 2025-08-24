@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source=redis_publisher.go -destination=./mocks/mock_redis_publisher.go -package=mocks
+
 import (
 	"context"
 	"encoding/json"

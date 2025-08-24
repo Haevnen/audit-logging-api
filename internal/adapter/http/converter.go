@@ -10,7 +10,7 @@ import (
 )
 
 // Convert from OpenAPI Action → Domain ActionType
-func toEntityAction(a api_service.Action) log.ActionType {
+func ToEntityAction(a api_service.Action) log.ActionType {
 	switch a {
 	case api_service.CREATE:
 		return log.ActionCreate
@@ -26,7 +26,7 @@ func toEntityAction(a api_service.Action) log.ActionType {
 }
 
 // Same idea for Severity
-func toEntitySeverity(s api_service.Severity) log.Severity {
+func ToEntitySeverity(s api_service.Severity) log.Severity {
 	switch s {
 	case api_service.CRITICAL:
 		return log.SeverityCritical
@@ -66,7 +66,7 @@ func JSONToMap(j *datatypes.JSON) (*map[string]interface{}, error) {
 	return &m, nil
 }
 
-func toLogStatsResponse(stats []log.LogStats) []api_service.LogStat {
+func ToLogStatsResponse(stats []log.LogStats) []api_service.LogStat {
 	var resp []api_service.LogStat
 	for _, s := range stats {
 		resp = append(resp, api_service.LogStat{
@@ -85,7 +85,7 @@ func toLogStatsResponse(stats []log.LogStats) []api_service.LogStat {
 	return resp
 }
 
-func toSingleLogResponse(l entity_log.Log) (api_service.GetSingleLogResponse, error) {
+func ToSingleLogResponse(l entity_log.Log) (api_service.GetSingleLogResponse, error) {
 	before, err := JSONToMap(l.BeforeState)
 	if err != nil {
 		return api_service.GetSingleLogResponse{}, err

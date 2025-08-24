@@ -14,18 +14,18 @@ const (
 )
 
 type Handler struct {
-	tenantHandler
-	tokenHandler
-	logHandler
-	logStreamHandler
+	TenantHandler
+	TokenHandler
+	LogHandler
+	LogStreamHandler
 }
 
 func New(r *registry.Registry) Handler {
 	h := Handler{}
-	h.tenantHandler = newTenantHandler(r)
-	h.tokenHandler = newTokenHandler(r)
-	h.logHandler = newLogHandler(r)
-	h.logStreamHandler = newLogStreamHandler(r)
+	h.TenantHandler = newTenantHandler(r)
+	h.TokenHandler = newTokenHandler(r)
+	h.LogHandler = newLogHandler(r)
+	h.LogStreamHandler = newLogStreamHandler(r)
 	return h
 }
 
@@ -38,7 +38,7 @@ func (Handler) GetPing(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func bindRequestBody(ctx *gin.Context, body interface{}) error {
+func BindRequestBody(ctx *gin.Context, body interface{}) error {
 	if err := ctx.ShouldBindJSON(body); err != nil {
 		return err
 	}
