@@ -41,7 +41,7 @@ Stores audit log entries as a **TimescaleDB hypertable**, optimized for high-vol
 
 - **Primary Key**: (`tenant_id`, `event_timestamp`, `id`)  
 - Ensures uniqueness and supports efficient time-series partitioning.
-- Each log is tied to a `tenant_id`.  
+- Each log is tied to a `tenant_id` ensuring tenant isolation.
 - **Foreign key with `ON DELETE CASCADE`** ensures log cleanup when a tenant is removed.  
 - Async tasks also carry tenant scope for correct isolation.
 
