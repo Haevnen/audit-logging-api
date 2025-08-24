@@ -40,7 +40,6 @@ func newLogHandler(r *registry.Registry) LogHandler {
 	}
 }
 
-// (POST /logs)
 func (h LogHandler) CreateLog(g *gin.Context) {
 	userId := g.GetString(constant.UserID)
 	tenantId := getClaimTenant(g)
@@ -70,7 +69,6 @@ func (h LogHandler) CreateLog(g *gin.Context) {
 	g.JSON(http.StatusCreated, resp)
 }
 
-// (POST /logs/bulk)
 func (h LogHandler) CreateBulkLogs(c *gin.Context) {
 	tenantId := getClaimTenant(c)
 	userId := c.GetString(constant.UserID)
@@ -108,7 +106,10 @@ func (h LogHandler) CreateBulkLogs(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-// (GET /logs/{id})
+// GetLog implements (GET /logs/{id})
+// Get a log by its id
+// The response will contain the log in the form of a GetSingleLogResponse.
+// If the log is not found, a ErrRecordNotFound error is returned.
 func (h LogHandler) GetLog(c *gin.Context, id string) {
 	if len(id) == 0 {
 		SendError(c, "id is required", apperror.ErrInvalidRequestInput)
@@ -133,7 +134,8 @@ func (h LogHandler) GetLog(c *gin.Context, id string) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// (DELETE /logs/cleanup)
+// CleanupLogs implements (DELETE /logs/cleanup)
+// Cleanup logs before given date
 func (h LogHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsParams) {
 	tenantId := getClaimTenant(c)
 	userId := c.GetString(constant.UserID)
@@ -146,7 +148,12 @@ func (h LogHandler) CleanupLogs(c *gin.Context, params api_service.CleanupLogsPa
 	c.JSON(http.StatusOK, "cleanup successful")
 }
 
-// (GET /logs/stat)
+// GetLogsStat implements (GET /logs/stat)
+// Get statistics for logs within the provided time range.
+// The supported parameters are:
+// - start_date: the start time of the search range
+// - end_date: the end time of the search range (optional, defaults to now)
+// The response will contain statistics about the logs in the form of a LogStatsResponse.
 func (h LogHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatParams) {
 	tenantId := getClaimTenant(c)
 
@@ -170,6 +177,18 @@ func (h LogHandler) GetLogsStat(c *gin.Context, params api_service.GetLogsStatPa
 }
 
 // (GET /api/v1/logs/search)
+// Search logs using the provided parameters. The response will contain a list of logs that match the search criteria.
+// The supported parameters are:
+// - user_id: the id of the user who performed the action
+// - action: the action that was performed
+// - resource: the resource that was involved in the action
+// - severity: the severity of the action
+// - start_time: the start time of the search range
+// - end_time: the end time of the search range
+// - q: a query string to search for in the logs
+// - page_number: the page number of the search results
+// - page_size: the number of search results to return per page
+// The response will contain a list of logs
 func (h LogHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsParams) {
 	pageNumber, pageSize := 1, constant.MaxPageSize
 	if params.PageNumber != nil && *params.PageNumber > 0 {
@@ -221,6 +240,10 @@ func (h LogHandler) SearchLogs(c *gin.Context, params api_service.SearchLogsPara
 }
 
 // (GET /api/v1/logs/export)
+// Export logs to CSV or JSON. The supported parameters are the same as GET /api/v1/logs/search.
+// The format parameter is required and should be one of "json" or "csv".
+// The response will be a file with the corresponding extension.
+// The data will be streamed as it is generated, so the response will be sent as soon as the first log is available.
 func (h LogHandler) ExportLogs(c *gin.Context, params api_service.ExportLogsParams) {
 	ctx := c.Request.Context()
 
