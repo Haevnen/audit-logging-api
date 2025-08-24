@@ -127,6 +127,7 @@ make worker # using another terminal
 ---
 
 ## 6 Testing
+- Please refer [testing guideline](docs/Testing_guideline.md) before calling any API
 - Unittest: 54%
 ```bash
 make test
@@ -147,6 +148,7 @@ total:                                                                          
   collection](docs/Audit%20Logging%20API.postman_collection.json)
 
 ## 7 Documentation
+- [Testing guideline](docs/Testing_guideline.md)
 - [System Architecture](docs/System_architecture.md)
 - [Design decision](docs/Design_decision.md)
 - [Database design](docs/Database_design.md)
