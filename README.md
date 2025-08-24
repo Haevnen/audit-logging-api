@@ -147,7 +147,8 @@ total:                                                                          
   collection](docs/Audit%20Logging%20API.postman_collection.json)
 
 ## 7 Documentation
-- [OpenAPI 3.0 spec](http://localhost:8080/)
-- [Postman collection](docs/Audit%20Logging%20API.postman_collection.json)
 - [System Architecture](docs/System_architecture.md)
 - [Design decision](docs/Design_decision.md)
+- [Database design](docs/Database_design.md)
+- [OpenAPI 3.0 spec](http://localhost:8080/)
+- [Postman collection](docs/Audit%20Logging%20API.postman_collection.json)
