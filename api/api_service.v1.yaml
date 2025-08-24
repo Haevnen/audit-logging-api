@@ -580,13 +580,13 @@ paths:
       - BearerAuth: []
       parameters:
       - in: query
-        name: startDate
+        name: start_date
         required: true
         schema:
           type: string
           format: date-time
       - in: query
-        name: endDate
+        name: end_date
         schema:
           type: string
           format: date-time

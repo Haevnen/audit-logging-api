@@ -245,8 +245,8 @@ type ExportLogsParamsFormat string
 
 // GetLogsStatParams defines parameters for GetLogsStat.
 type GetLogsStatParams struct {
-	StartDate time.Time  `form:"startDate" json:"startDate"`
-	EndDate   *time.Time `form:"endDate,omitempty" json:"endDate,omitempty"`
+	StartDate time.Time  `form:"start_date" json:"start_date"`
+	EndDate   *time.Time `form:"end_date,omitempty" json:"end_date,omitempty"`
 }
 
 // StreamLogsParams defines parameters for StreamLogs.

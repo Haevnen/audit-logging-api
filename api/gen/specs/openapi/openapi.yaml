@@ -370,7 +370,7 @@ paths:
       parameters:
       - explode: true
         in: query
-        name: startDate
+        name: start_date
         required: true
         schema:
           format: date-time
@@ -378,7 +378,7 @@ paths:
         style: form
       - explode: true
         in: query
-        name: endDate
+        name: end_date
         required: false
         schema:
           format: date-time
