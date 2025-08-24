@@ -1,0 +1,417 @@
+{
+	"info": {
+		"_postman_id": "ed7e6ec1-78b8-4964-a39f-638da182fc4c",
+		"name": "Audit Logging API",
+		"description": "Audit Log API endpoints with example headers and bodies",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23402697"
+	},
+	"item": [
+		{
+			"name": "POST /api/v1/logs",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"user_id\": \"user-2001\",\n  \"tenant_id\": \"c2e217a3-fe51-444c-a41c-6956c4c81d51\",\n  \"session_id\": \"sess-2025\",\n  \"action\": \"UPDATE\",\n  \"resource_type\": \"account\",\n  \"resource_id\": \"84\",\n  \"message\": \"Profile update\",\n  \"metadata\": {\n    \"request_id\": \"req-2468\",\n    \"source\": \"mobile-app\"\n  },\n  \"before_state\": {\n    \"email\": \"bob@example.org\",\n    \"phone\": \"+1-202-555-1111\",\n    \"name\": \"Bob\"\n  },\n  \"after_state\": {\n    \"email\": \"bob.updated@example.org\",\n    \"phone\": \"+1-202-555-2222\",\n    \"name\": \"Robert\"\n  },\n  \"severity\": \"WARNING\",\n  \"event_timestamp\": \"2025-07-22T09:15:00Z\",\n  \"ip_address\": \"10.0.0.45\",\n  \"user_agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/605.1.15 Safari/605.1.15\"\n}"
+				},
+				"url": {
+					"raw": "localhost:38081/api/v1/logs",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/v1/logs/bulk",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"tenant_id\": \"c2e217a3-fe51-444c-a41c-6956c4c81d51\",\n    \"user_id\": \"alpha-user\",\n    \"session_id\": \"sess-2025-01\",\n    \"action\": \"CREATE\",\n    \"resource_type\": \"account\",\n    \"resource_id\": \"99\",\n    \"message\": \"New account created successfully\",\n    \"metadata\": {\n      \"trace_id\": \"trace-1111\",\n      \"workflow_id\": \"wf-2025-01\",\n      \"origin\": \"api-gateway\"\n    },\n    \"before_state\": {\n      \"status\": \"none\",\n      \"role\": \"guest\"\n    },\n    \"after_state\": {\n      \"status\": \"active\",\n      \"role\": \"member\"\n    },\n    \"severity\": \"INFO\",\n    \"event_timestamp\": \"2025-08-01T10:05:00Z\",\n    \"ip_address\": \"10.20.30.40\",\n    \"user_agent\": \"curl/7.88.1\"\n  },\n  {\n    \"tenant_id\": \"c2e217a3-fe51-444c-a41c-6956c4c81d51\",\n    \"user_id\": \"beta-user\",\n    \"session_id\": \"sess-2025-02\",\n    \"action\": \"DELETE\",\n    \"resource_type\": \"document\",\n    \"resource_id\": \"doc-314\",\n    \"message\": \"Document permanently removed\",\n    \"metadata\": {\n      \"job_id\": \"job-8765\",\n      \"pipeline\": \"cleanup\",\n      \"env\": \"staging\"\n    },\n    \"before_state\": {\n      \"title\": \"Draft Report\",\n      \"status\": \"pending_review\"\n    },\n    \"after_state\": {\n      \"status\": \"deleted\"\n    },\n    \"severity\": \"CRITICAL\",\n    \"event_timestamp\": \"2025-08-05T16:20:45Z\",\n    \"ip_address\": \"172.16.0.15\",\n    \"user_agent\": \"PostmanRuntime/7.34.0\"\n  }\n]"
+				},
+				"url": {
+					"raw": "localhost:38081/api/v1/logs/bulk",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs",
+						"bulk"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/v1/logs/{id}",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/logs/14bda0dd-6bc9-4f53-be60-abdea8fd7576",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs",
+						"14bda0dd-6bc9-4f53-be60-abdea8fd7576"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE /api/v1/logs/cleanup",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/logs/cleanup?before_date=2025-12-16",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs",
+						"cleanup"
+					],
+					"query": [
+						{
+							"key": "before_date",
+							"value": "2025-12-16"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/v1/logs/stats",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/logs/stats?start_date=2025-05-01&end_date=2025-08-20",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs",
+						"stats"
+					],
+					"query": [
+						{
+							"key": "start_date",
+							"value": "2025-05-01"
+						},
+						{
+							"key": "end_date",
+							"value": "2025-08-20"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/v1/logs",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/logs?start_time=2025-05-01&end_time=2025-08-20",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "start_time",
+							"value": "2025-05-01"
+						},
+						{
+							"key": "end_time",
+							"value": "2025-08-20"
+						},
+						{
+							"key": "q",
+							"value": "Harvey",
+							"disabled": true
+						},
+						{
+							"key": "user_id",
+							"value": "user45",
+							"disabled": true
+						},
+						{
+							"key": "severity",
+							"value": "ERROR",
+							"disabled": true
+						},
+						{
+							"key": "tenant_id",
+							"value": "122fd698-eb4f-4610-8fae-f99d1aa4ef8f",
+							"disabled": true
+						},
+						{
+							"key": "action",
+							"value": "UPDATE",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WS /api/v1/logs/stream",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/logs/stream",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs",
+						"stream"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/v1/logs/export",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/logs/export?start_time=2025-05-01&end_time=2025-08-20&format=csv",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"logs",
+						"export"
+					],
+					"query": [
+						{
+							"key": "start_time",
+							"value": "2025-05-01"
+						},
+						{
+							"key": "end_time",
+							"value": "2025-08-20"
+						},
+						{
+							"key": "q",
+							"value": "Harvey",
+							"disabled": true
+						},
+						{
+							"key": "user_id",
+							"value": "user45",
+							"disabled": true
+						},
+						{
+							"key": "severity",
+							"value": "ERROR",
+							"disabled": true
+						},
+						{
+							"key": "tenant_id",
+							"value": "122fd698-eb4f-4610-8fae-f99d1aa4ef8f",
+							"disabled": true
+						},
+						{
+							"key": "action",
+							"value": "UPDATE",
+							"disabled": true
+						},
+						{
+							"key": "format",
+							"value": "csv"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /api/v1/tenants",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "localhost:38081/api/v1/tenants",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"tenants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /api/v1/tenants",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Thanh2\"\n}"
+				},
+				"url": {
+					"raw": "localhost:38081/api/v1/tenants",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"tenants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /auth/token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"role\": \"user\",\n  \"user_id\": \"123e4567\",\n  \"tenant_id\": \"c2e217a3-fe51-444c-a41c-6956c4c81d51\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:38081/api/v1/auth/token",
+					"host": [
+						"localhost"
+					],
+					"port": "38081",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "jwt_token",
+			"value": "YOUR_JWT_TOKEN_HERE"
+		}
+	]
+}
