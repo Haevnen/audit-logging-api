@@ -11,16 +11,14 @@ graph TB
         Mobile["Mobile App"]
     end
 
-    %% ========== API GATEWAY ==========
-    subgraph "API Gateway"
-        LB["Load Balancer / ALB"]
-        Auth["JWT Authentication"]
-        RateLimit["Rate Limiting"]
-        Validation["Request Validation"]
+    %% ========== LOAD BALANCER ==========
+    subgraph "Load Balancer"
+        LB["ALB"]
     end
 
     %% ========== API LAYER ==========
     subgraph "API Layer"
+        Middleware["Middleware<br/>(JWT Auth, AuthZ, RateLimit, Validation)"]
         LogAPI["Log API<br/>(POST /logs)"]
         BulkAPI["Bulk Log API<br/>(POST /logs/bulk)"]
         SearchAPI["Search API<br/>(GET /logs?filters)"]
@@ -48,7 +46,6 @@ graph TB
 
     %% ========== MESSAGE QUEUE ==========
     subgraph "Message Queue"
-        SQS["AWS SQS"]
         ArchivalQueue["Archival Queue"]
         CleanupQueue["Cleanup Queue"]
         IndexQueue["Index Queue"]
@@ -74,17 +71,14 @@ graph TB
     Browser --> LB
     Mobile --> LB
 
-    LB --> Auth
-    Auth --> RateLimit
-    RateLimit --> Validation
-
-    Validation --> LogAPI
-    Validation --> BulkAPI
-    Validation --> SearchAPI
-    Validation --> StatAPI
-    Validation --> ExportAPI
-    Validation --> StreamAPI
-    Validation --> TenantAPI
+    LB --> Middleware
+    Middleware --> LogAPI
+    Middleware --> BulkAPI
+    Middleware --> SearchAPI
+    Middleware --> StatAPI
+    Middleware --> ExportAPI
+    Middleware --> StreamAPI
+    Middleware --> TenantAPI
 
     LogAPI --> LogUC
     BulkAPI --> LogUC
@@ -108,9 +102,8 @@ graph TB
     Redis --> StreamAPI
 
     %% Async flows
-    LogUC -.-> SQS
-    SQS -.-> ArchivalQueue
-    SQS -.-> CleanupQueue
+    LogUC -.-> ArchivalQueue
+    LogUC -.-> CleanupQueue
     LogUC -.-> IndexQueue
 
     ArchivalQueue -.-> ArchiveWorker
@@ -125,7 +118,7 @@ graph TB
 
     %% ========== STYLE ==========
     classDef client fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
-    classDef gateway fill:#e8eaf6,stroke:#3f51b5,stroke-width:1px
+    classDef lb fill:#ffe0b2,stroke:#ef6c00,stroke-width:1px
     classDef api fill:#ede7f6,stroke:#673ab7,stroke-width:1px
     classDef service fill:#e8f5e9,stroke:#388e3c,stroke-width:1px
     classDef repo fill:#fff3e0,stroke:#ef6c00,stroke-width:1px
@@ -134,11 +127,11 @@ graph TB
     classDef storage fill:#f3e5f5,stroke:#8e24aa,stroke-width:1px
 
     class Client,Browser,Mobile client
-    class LB,Auth,RateLimit,Validation gateway
-    class LogAPI,BulkAPI,SearchAPI,StatAPI,ExportAPI,StreamAPI,TenantAPI api
+    class LB lb
+    class Middleware,LogAPI,BulkAPI,SearchAPI,StatAPI,ExportAPI,StreamAPI,TenantAPI api
     class LogUC,TenantUC,AuthSvc,PubSubSvc service
     class LogRepo,TenantRepo,TaskRepo,OpenSearchRepo repo
-    class SQS,ArchivalQueue,CleanupQueue,IndexQueue mq
+    class ArchivalQueue,CleanupQueue,IndexQueue mq
     class ArchiveWorker,CleanupWorker,IndexWorker worker
     class Postgres,S3,OpenSearch,Redis storage
 ```
